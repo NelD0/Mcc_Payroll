@@ -625,10 +625,10 @@
             <div class="card-soft p-3 stat-card">
               <div class="d-flex align-items-center">
                 <div class="icon-wrap me-3" style="background:rgba(255, 193, 7, 0.1);">
-                  <i class="bi bi-person-check-fill" style="color: #ffc107;"></i>
+                  <i class="bi bi-person-check-fill" style="color: #0741ff;"></i>
                 </div>
                 <div>
-                  <div class="stat-value" style="color: #ffc107;">{{ $totalParttimeInstructors ?? 0 }}</div>
+                  <div class="stat-value" style="color: #0734ff;">{{ $totalParttimeInstructors ?? 0 }}</div>
                   <small class="text-muted">Part-time</small>
                 </div>
               </div>
