@@ -24,6 +24,7 @@ class FulltimeTimesheetController extends Controller
     {
         $data = $request->validate([
             'employee_name' => 'required',
+            'email' => 'nullable|email',
             'designation' => 'required|in:instructor,utility,staff',
             'prov_abr' => 'nullable',
             'department' => 'nullable|string',
@@ -72,6 +73,7 @@ class FulltimeTimesheetController extends Controller
         $timesheet = FulltimeTimesheet::findOrFail($id);
         $data = $request->validate([
             'employee_name' => 'required',
+            'email' => 'nullable|email',
             'designation' => 'required|in:instructor,utility,staff',
             'prov_abr' => 'nullable',
             'department' => 'nullable|string',

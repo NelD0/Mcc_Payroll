@@ -9,6 +9,7 @@ class FulltimeTimesheet extends Model
     protected $fillable = [
         'employee_id',
         'employee_name',
+        'email',
         'designation',
         'prov_abr',
         'department',

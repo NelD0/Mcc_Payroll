@@ -22,6 +22,7 @@ class StaffTimesheetController extends Controller
     {
         $data = $request->validate([
             'employee_name' => 'required',
+            'email' => 'nullable|email',
             'designation' => 'required|in:instructor,utility,staff',
             'prov_abr' => 'nullable',
             'days' => 'nullable',
@@ -68,6 +69,7 @@ class StaffTimesheetController extends Controller
         $timesheet = StaffTimesheet::findOrFail($id);
         $data = $request->validate([
             'employee_name' => 'required',
+            'email' => 'nullable|email',
             'designation' => 'required|in:instructor,utility,staff',
             'prov_abr' => 'nullable',
             'days' => 'nullable',

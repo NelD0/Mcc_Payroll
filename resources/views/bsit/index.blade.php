@@ -13,7 +13,9 @@
       font-family: "Segoe UI", Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background: #dc3545; /* Red background for BSIT */
+      background: radial-gradient(circle at top left, white 30%, transparent 30%) top left/50% 100% no-repeat,
+                  radial-gradient(circle at bottom right, #3498db 30%, transparent 30%) bottom right/50% 100% no-repeat,
+                  linear-gradient(135deg, #3498db, #5dade2, white); /* Match Create Account background */
       min-height: 100vh;
       display: flex;
       align-items: flex-start;

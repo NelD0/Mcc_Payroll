@@ -855,6 +855,8 @@
                 </td>
             `;
             
+            // Store the employee id on the row for reliable access
+            row.dataset.employeeId = id;
             return row;
         }
 
@@ -862,10 +864,10 @@
             const icon = cell.querySelector('i');
             const day = cell.dataset.day;
             const row = cell.closest('tr');
-            const employeeId = row.cells[0].textContent.trim();
+            const employeeId = row.dataset.employeeId || row.cells[1].textContent.trim(); // fallback to ID cell
             
             // Find employee in data
-            const employee = attendanceData.find(emp => emp.id === employeeId);
+            const employee = attendanceData.find(emp => String(emp.id) === String(employeeId));
             
             if (icon.classList.contains('fa-times')) {
                 // Change to present
@@ -888,8 +890,8 @@
                 const icon = cell.querySelector('i');
                 const day = cell.dataset.day;
                 const row = cell.closest('tr');
-                const employeeId = row.cells[0].textContent.trim();
-                const employee = attendanceData.find(emp => emp.id === employeeId);
+                const employeeId = row.dataset.employeeId || row.cells[1].textContent.trim();
+                const employee = attendanceData.find(emp => String(emp.id) === String(employeeId));
                 
                 icon.classList.remove('fa-times', 'attendance-absent');
                 icon.classList.add('fa-check', 'attendance-present');
@@ -904,8 +906,8 @@
                 const icon = cell.querySelector('i');
                 const day = cell.dataset.day;
                 const row = cell.closest('tr');
-                const employeeId = row.cells[0].textContent.trim();
-                const employee = attendanceData.find(emp => emp.id === employeeId);
+                const employeeId = row.dataset.employeeId || row.cells[1].textContent.trim();
+                const employee = attendanceData.find(emp => String(emp.id) === String(employeeId));
                 
                 icon.classList.remove('fa-check', 'attendance-present');
                 icon.classList.add('fa-times', 'attendance-absent');

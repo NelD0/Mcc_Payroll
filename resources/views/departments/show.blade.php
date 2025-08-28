@@ -205,9 +205,39 @@
       </div>
     </div>
 
+    <!-- Present Today -->
+    <h4 class="mb-3">Present on {{ $todayLabel }}</h4>
+    @if(isset($presentToday) && $presentToday->count() > 0)
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Designation</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach($presentToday as $p)
+          <tr>
+            <td class="left">{{ $p['name'] }}</td>
+            <td>{{ $p['designation'] }}</td>
+            <td>{{ $p['type'] }}</td>
+          </tr>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+    @else
+      <div class="alert alert-warning mt-2">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        No present records for today yet.
+      </div>
+    @endif
+
     <!-- Employees List -->
     @if($department->employees->count() > 0)
-    <h4 class="mb-3">Employees in this Department</h4>
+    <h4 class="mb-3 mt-4">Employees in this Department</h4>
     <div class="table-container">
       <table>
         <thead>

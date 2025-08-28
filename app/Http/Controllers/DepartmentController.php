@@ -48,7 +48,55 @@ class DepartmentController extends Controller
     public function show(Department $department)
     {
         $department->load(['employees', 'fulltimeTimesheets', 'parttimeTimesheets', 'staffTimesheets', 'utilityTimesheets']);
-        return view('departments.show', compact('department'));
+
+        // Build "present today" list from timesheet days JSON
+        $todayKey = strtolower(now()->format('l')); // monday, tuesday, ...
+        $isPresent = function ($days) use ($todayKey) {
+            if (empty($days)) return false;
+            // If stored as associative map like ['monday'=>8,...]
+            if (is_array($days) && array_key_exists($todayKey, $days)) {
+                return (int)($days[$todayKey] ?? 0) > 0;
+            }
+            // If stored as simple array of day names like ['Monday','Tuesday']
+            if (is_array($days)) {
+                return in_array(ucfirst($todayKey), $days, true);
+            }
+            // If stored as JSON string
+            if (is_string($days)) {
+                $decoded = json_decode($days, true) ?: [];
+                if (array_key_exists($todayKey, $decoded)) {
+                    return (int)($decoded[$todayKey] ?? 0) > 0;
+                }
+                return in_array(ucfirst($todayKey), $decoded, true);
+            }
+            return false;
+        };
+
+        $presentToday = collect();
+        foreach ($department->fulltimeTimesheets as $t) {
+            if ($isPresent($t->days)) {
+                $presentToday->push([
+                    'name' => $t->employee_name,
+                    'designation' => $t->designation,
+                    'type' => 'Fulltime'
+                ]);
+            }
+        }
+        foreach ($department->parttimeTimesheets as $t) {
+            if ($isPresent($t->days)) {
+                $presentToday->push([
+                    'name' => $t->employee_name,
+                    'designation' => $t->designation,
+                    'type' => 'Part-time'
+                ]);
+            }
+        }
+
+        return view('departments.show', [
+            'department' => $department,
+            'presentToday' => $presentToday,
+            'todayLabel' => ucfirst($todayKey)
+        ]);
     }
 
     /**

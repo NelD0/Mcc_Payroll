@@ -26,6 +26,7 @@ class EducationController extends Controller
                 'department' => $timesheet->department ?? 'EDUCATION',
                 'employee_type' => 'Full-time',
                 'prov_abr' => $timesheet->prov_abr,
+                'attendance' => $this->buildAttendance($timesheet->days),
                 'days_worked' => $this->calculateDaysWorked($timesheet->days),
                 'total_hours' => $timesheet->total_hour,
                 'rate_per_hour' => $timesheet->rate_per_hour,
@@ -49,6 +50,7 @@ class EducationController extends Controller
                 'department' => $timesheet->department ?? 'EDUCATION',
                 'employee_type' => 'Part-time',
                 'prov_abr' => $timesheet->prov_abr,
+                'attendance' => $this->buildAttendance($timesheet->days),
                 'days_worked' => $this->calculateDaysWorked($timesheet->days),
                 'total_hours' => $timesheet->total_hour,
                 'rate_per_hour' => $timesheet->rate_per_hour,
@@ -70,17 +72,41 @@ class EducationController extends Controller
     }
     
     /**
+     * Convert days array (hours) to boolean attendance per weekday
+     */
+    private function buildAttendance($days): array
+    {
+        if (is_string($days)) {
+            $days = json_decode($days, true) ?: [];
+        }
+        if (!is_array($days)) {
+            $days = [];
+        }
+        return [
+            'monday' => (int)($days['monday'] ?? 0) > 0,
+            'tuesday' => (int)($days['tuesday'] ?? 0) > 0,
+            'wednesday' => (int)($days['wednesday'] ?? 0) > 0,
+            'thursday' => (int)($days['thursday'] ?? 0) > 0,
+            'friday' => (int)($days['friday'] ?? 0) > 0,
+            'saturday' => (int)($days['saturday'] ?? 0) > 0,
+        ];
+    }
+
+    /**
      * Calculate the number of days worked from the days JSON data
      */
     private function calculateDaysWorked($days)
     {
+        if (is_string($days)) {
+            $days = json_decode($days, true) ?: [];
+        }
         if (!$days || !is_array($days)) {
             return 0;
         }
         
         $daysWorked = 0;
         foreach ($days as $day => $hours) {
-            if ($hours > 0) {
+            if ((int)$hours > 0) {
                 $daysWorked++;
             }
         }

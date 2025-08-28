@@ -306,6 +306,11 @@
       </div>
 
       <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" value="{{ $timesheet->email }}" placeholder="name@gmail.com">
+      </div>
+
+      <div class="mb-3">
         <label for="designation" class="form-label">Designation</label>
         <select class="form-control" id="designation" name="designation" required>
           <option value="">Select Designation</option>

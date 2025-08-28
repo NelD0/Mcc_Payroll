@@ -105,6 +105,14 @@
       left: 100%;
     }
 
+    /* Position top action buttons (Print/Add) at top-right */
+    .top-actions {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 3;
+    }
+
     .btn-back {
       background: linear-gradient(135deg, #f093fb, #f5576c);
     }
@@ -305,8 +313,8 @@
 
     <h2>Utility Timesheet</h2>
 
-    <!-- Add and Print buttons with icons -->
-    <div class="float-end">
+    <!-- Add and Print buttons with icons (Top Right) -->
+    <div class="top-actions">
       <button onclick="openPrintPage()" class="icon-btn print-btn me-2" title="Open Print Page">
         <i class="bi bi-printer"></i>
       </button>
