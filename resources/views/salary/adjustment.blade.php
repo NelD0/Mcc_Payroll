@@ -11,22 +11,35 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
+    /* Theme tokens */
     :root{
-      --brand:#3498db;          
-      --brand-600:#2980b9;      
-      --muted:#f5f6f8;          
-      --card:#ffffff;           
-      --text:#111111;           
+      --brand:#3498db;
+      --brand-600:#2980b9;
+      --muted:#f5f6f8;
+      --card:#ffffff;
+      --text:#111111;
     }
     .night-mode {
       --brand:#222831;
       --brand-600:#393e46;
       --muted:#18191a;
       --card:#c5c8ce;
-      --text:#ffffff;           
+      --text:#ffffff;
     }
-    body{ background:var(--muted); color:var(--text); transition:background .3s, color .3s; }
+
+    /* Base */
+    body{
+      background:var(--muted);
+      color:var(--text);
+      transition:background .3s, color .3s;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.5;
+    }
     .app{ min-height:100vh; }
+
+    /* Sidebar */
     .sidebar{
       background: linear-gradient(180deg, var(--brand), var(--brand-600));
       color:#fff; width:260px; position:sticky; top:0; height:100vh; padding:1.25rem 1rem;
@@ -39,171 +52,103 @@
       background:#fff; color:var(--brand-600);
     }
     .sidebar .section-title{ font-size:.8rem; text-transform:uppercase; opacity:.85; margin:.9rem .5rem .3rem; }
+
+    /* Content + Topbar */
     .content{ flex:1; }
-    .topbar{ background:#fff; border-bottom:1px solid #f0f0f0; padding:.75rem 1rem; position:sticky; top:0; z-index:1020; }
+    .topbar{
+      background:var(--card);
+      border-bottom:1px solid #eef1f4;
+      padding:.75rem 1rem;
+      position:sticky; top:0; z-index:1020;
+      box-shadow: 0 6px 12px rgba(0,0,0,.03);
+    }
     .logout-icon{ font-size:1.4rem; color:var(--brand); }
     .logout-icon:hover{ color:#85c1e9; }
-    .card-soft{ background:var(--card); border:1px solid #f0f0f0; border-radius:1rem; box-shadow:0 8px 20px rgba(0,0,0,.03); }
-    
-    .sidebar-btn {
-      background-color: #3498db; color: white; text-align: left; margin-bottom: 5px; border: none; width: 100%; padding: 8px 12px; border-radius: 5px; transition: 0.3s;
-    }
-    .sidebar-btn:hover, .sidebar-btn:focus {
-      background-color: white; color: #3498db; border: 1px solid #3498db;
+
+    /* Cards */
+    .card-soft{
+      background:var(--card);
+      border:1px solid #eef1f4;
+      border-radius:1rem;
+      box-shadow:0 8px 24px rgba(0,0,0,.04);
     }
 
+    /* Sidebar buttons */
+    .sidebar-btn {
+      background-color: var(--brand); color: white; text-align: left; margin-bottom: 6px; border: none; width: 100%; padding: 9px 12px; border-radius: 8px; transition: all 0.25s ease;
+    }
+    .sidebar-btn:hover, .sidebar-btn:focus { background-color: white; color: var(--brand); border: 1px solid var(--brand); transform: translateY(-1px); }
+
     /* Salary Adjustment Specific Styles */
-    body {
-      font-family: Arial, sans-serif;
-    }
     .table thead th {
-      text-align: center;
-      vertical-align: middle;
-      background: var(--brand) !important;
-      color: #fff !important;
+      text-align: center; vertical-align: middle;
+      background: var(--brand) !important; color: #fff !important;
     }
-    .highlight-green {
-      background-color: #d4edda;
-    }
-    .highlight-pink {
-      background-color: #f8d7da;
-    }
+    .highlight-green { background-color: #d4edda; }
+    .highlight-pink { background-color: #f8d7da; }
     .highlight-yellow {
-      background-color: #fff3cd;
-      font-weight: bold;
+      background-color: #fff3cd; font-weight: 600; border: 1px solid #ffe69c; border-radius: .5rem; padding:.5rem 1rem; display:inline-block;
     }
-    .title {
-      text-align: center;
-      font-weight: bold;
-    }
-    .college-header {
-      text-align: center;
-      font-size: 20px;
-      font-weight: bold;
-    }
-    
-    /* Delete button styling */
-    .delete-employee {
-      transition: all 0.3s ease;
-    }
-    
-    .delete-employee:hover {
-      transform: scale(1.1);
-      box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
-    }
-    
-    /* Custom SweetAlert2 styling for delete confirmation */
-    .swal-delete-popup {
-      border-radius: 15px !important;
-      border: 2px solid #dc3545 !important;
-    }
-    
-    .swal-delete-title {
-      color: #dc3545 !important;
-      font-weight: 700 !important;
-    }
-    
-    .swal-delete-content {
-      color: #495057 !important;
-    }
-    
-    .swal-delete-button {
-      background: linear-gradient(135deg, #dc3545, #c82333) !important;
-      border: none !important;
-      border-radius: 8px !important;
-      font-weight: 600 !important;
-      padding: 12px 24px !important;
-    }
-    
-    .swal-cancel-button {
-      background: linear-gradient(135deg, #6c757d, #5a6268) !important;
-      border: none !important;
-      border-radius: 8px !important;
-      font-weight: 600 !important;
-      padding: 12px 24px !important;
-    }
-    
-    .swal-success-popup {
-      border-radius: 15px !important;
-      border: 2px solid #28a745 !important;
-    }
-    
-    /* Date Selection Styling */
+    .title { text-align: center; font-weight: 700; }
+    .college-header { text-align: center; font-size: 20px; font-weight: 700; }
+
+    /* Actions */
+    .delete-employee { transition: transform .2s ease, box-shadow .2s ease; }
+    .delete-employee:hover { transform: scale(1.06); box-shadow: 0 4px 8px rgba(220, 53, 69, 0.25); }
+
+    /* SweetAlert2 */
+    .swal-delete-popup { border-radius: 15px !important; border: 2px solid #dc3545 !important; }
+    .swal-delete-title { color: #dc3545 !important; font-weight: 700 !important; }
+    .swal-delete-content { color: #495057 !important; }
+    .swal-delete-button { background: linear-gradient(135deg, #dc3545, #c82333) !important; border: none !important; border-radius: 8px !important; font-weight: 600 !important; padding: 12px 24px !important; }
+    .swal-cancel-button { background: linear-gradient(135deg, #6c757d, #5a6268) !important; border: none !important; border-radius: 8px !important; font-weight: 600 !important; padding: 12px 24px !important; }
+    .swal-success-popup { border-radius: 15px !important; border: 2px solid #28a745 !important; }
+
+    /* Date Selection */
     .date-selection-card {
       background: linear-gradient(135deg, rgba(52, 152, 219, 0.05), rgba(52, 152, 219, 0.1));
       border: 1px solid rgba(52, 152, 219, 0.2);
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.1);
+      border-radius: 12px; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.1);
     }
-    
-    .date-selection-card .card-header {
-      background: linear-gradient(135deg, var(--brand), var(--brand-600)) !important;
-      border-radius: 12px 12px 0 0 !important;
-      font-weight: 600;
-    }
-    
-    .quick-preset-btn {
-      transition: all 0.3s ease;
-      border-radius: 6px !important;
-    }
-    
-    .quick-preset-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
-    }
-    
-    .date-update-btn {
-      background: linear-gradient(135deg, #28a745, #20c997) !important;
-      border: none !important;
-      transition: all 0.3s ease;
-    }
-    
-    .date-update-btn:hover {
-      background: linear-gradient(135deg, #20c997, #17a2b8) !important;
-      transform: scale(1.05);
-    }
-    
-    /* Dynamic date display animation */
-    #dateDisplay {
-      transition: all 0.5s ease;
-      animation: dateGlow 2s ease-in-out infinite alternate;
-    }
-    
-    @keyframes dateGlow {
-      0% { 
-        box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
-      }
-      100% { 
-        box-shadow: 0 0 20px rgba(255, 193, 7, 0.8), 0 0 30px rgba(255, 193, 7, 0.4);
-      }
-    }
-    
-    /* Month/Year select styling */
-    .form-select-sm {
-      border-radius: 8px;
-      border: 2px solid #e9ecef;
-      transition: all 0.3s ease;
-    }
-    
-    .form-select-sm:focus {
-      border-color: var(--brand);
-      box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-    }
-    
-    /* Print styles */
+    .date-selection-card .card-header { background: linear-gradient(135deg, var(--brand), var(--brand-600)) !important; border-radius: 12px 12px 0 0 !important; font-weight: 600; }
+    .quick-preset-btn { transition: all 0.2s ease; border-radius: 6px !important; }
+    .quick-preset-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(52, 152, 219, 0.25); }
+    .date-update-btn { background: linear-gradient(135deg, #28a745, #20c997) !important; border: none !important; transition: all 0.2s ease; }
+    .date-update-btn:hover { background: linear-gradient(135deg, #20c997, #17a2b8) !important; transform: translateY(-1px); }
+
+    /* Dynamic date display */
+    #dateDisplay { transition: all 0.4s ease; animation: dateGlow 2s ease-in-out infinite alternate; border-radius:.75rem; }
+    @keyframes dateGlow { 0% { box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);} 100% { box-shadow: 0 0 20px rgba(255, 193, 7, 0.7), 0 0 30px rgba(255, 193, 7, 0.35);} }
+
+    /* Selects */
+    .form-select-sm { border-radius: 8px; border: 2px solid #e9ecef; transition: all 0.2s ease; }
+    .form-select-sm:focus { border-color: var(--brand); box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25); }
+
+    /* Table usability */
+    .table thead th.sticky-top, .table thead th { position: sticky; top: 0; z-index: 5; box-shadow: inset 0 -1px 0 rgba(0,0,0,.05); }
+    .table tbody tr:hover { background-color: rgba(52, 152, 219, 0.06); }
+    .table > :not(caption) > * > * { vertical-align: middle; }
+
+    /* Day columns */
+    #dayHeaders th { min-width: 70px; padding: 6px 4px; }
+    .day-col-header { min-width: 70px; }
+    .day-cell { min-width: 90px; }
+    .day-input { width: 80px; min-width: 80px; padding: 2px 6px; text-align: center; }
+
+    /* Optional stacked day header (if applied later) */
+    .day-header { text-align: center; padding: 4px 2px !important; border: 1px solid #dee2e6; }
+    .day-header .day-num { font-size: 12px; line-height: 1; opacity: 0.9; }
+    .day-header .day-dow { font-weight: 700; font-size: 12px; line-height: 1.1; text-transform: uppercase; }
+    #dayHeaders th.day-header { color: #000 !important; }
+    #dayHeaders th.day-header.first-half { background-color: #d4edda !important; }
+    #dayHeaders th.day-header.second-half { background-color: #f8d7da !important; }
+
+    /* Print */
     @media print {
-      .sidebar, .topbar, .no-print {
-        display: none !important;
-      }
-      .content {
-        margin-left: 0 !important;
-      }
-      .table {
-        font-size: 10px;
-      }
-      .college-header {
-        font-size: 16px;
-      }
+      .sidebar, .topbar, .no-print { display: none !important; }
+      .content { margin-left: 0 !important; }
+      .table { font-size: 10px; }
+      .college-header { font-size: 16px; }
     }
   </style>
 </head>
@@ -353,36 +298,38 @@
           </div>
           
           <!-- Table -->
-          <table class="table table-bordered table-sm mt-2 text-center align-middle">
-            <thead>
-              <tr>
-                <th rowspan="2" class="no-print">
-                  <input type="checkbox" id="selectAll" title="Select All">
-                </th>
-                <th rowspan="2">#</th>
-                <th rowspan="2">NAME OF EMPLOYEES</th>
-                <th rowspan="2">Designation</th>
-                <th colspan="15" class="highlight-green" id="firstHalfHeader">Adjustment July 1-15</th>
-                <th colspan="16" class="highlight-pink" id="secondHalfHeader">Adjustment July 16-31</th>
-                <th rowspan="2">Deduction</th>
-                <th rowspan="2">TOTAL Hours/Day</th>
-                <th rowspan="2">Rate per unit/Day</th>
-                <th rowspan="2">TOTAL HONORARIUM</th>
-                <th rowspan="2" class="no-print">Actions</th>
-              </tr>
-              <tr id="dayHeaders">
-                <!-- First Half Days (1-15) -->
-                <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
-                <th>6</th><th>7</th><th>8</th><th>9</th><th>10</th>
-                <th>11</th><th>12</th><th>13</th><th>14</th><th>15</th>
-                <!-- Second Half Days (16-31) -->
-                <th>16</th><th>17</th><th>18</th><th>19</th><th>20</th>
-                <th>21</th><th>22</th><th>23</th><th>24</th><th>25</th>
-                <th>26</th><th>27</th><th>28</th><th>29</th><th>30</th><th>31</th>
-              </tr>
-            </thead>
-
-          </table>
+          <div class="table-responsive mt-2">
+            <table class="table table-bordered table-striped table-hover table-sm text-center align-middle">
+              <thead>
+                <tr>
+                  <th rowspan="2" class="no-print">
+                    <input type="checkbox" id="selectAll" title="Select All">
+                  </th>
+                  <th rowspan="2">#</th>
+                  <th rowspan="2" class="text-start">NAME OF EMPLOYEES</th>
+                  <th rowspan="2" class="text-start">Designation</th>
+                  <th colspan="15" class="highlight-green" id="firstHalfHeader">Adjustment July 1-15</th>
+                  <th colspan="16" class="highlight-pink" id="secondHalfHeader">Adjustment July 16-31</th>
+                  <th rowspan="2">Deduction</th>
+                  <th rowspan="2">TOTAL Hours/Day</th>
+                  <th rowspan="2">Rate per unit/Day</th>
+                  <th rowspan="2">TOTAL HONORARIUM</th>
+                  <th rowspan="2" class="no-print">Actions</th>
+                </tr>
+                <tr id="dayHeaders">
+                  <!-- First Half Days (1-15) -->
+                  <th class="day-col-header">1</th><th class="day-col-header">2</th><th class="day-col-header">3</th><th class="day-col-header">4</th><th class="day-col-header">5</th>
+                  <th class="day-col-header">6</th><th class="day-col-header">7</th><th class="day-col-header">8</th><th class="day-col-header">9</th><th class="day-col-header">10</th>
+                  <th class="day-col-header">11</th><th class="day-col-header">12</th><th class="day-col-header">13</th><th class="day-col-header">14</th><th class="day-col-header">15</th>
+                  <!-- Second Half Days (16-31) -->
+                  <th class="day-col-header">16</th><th class="day-col-header">17</th><th class="day-col-header">18</th><th class="day-col-header">19</th><th class="day-col-header">20</th>
+                  <th class="day-col-header">21</th><th class="day-col-header">22</th><th class="day-col-header">23</th><th class="day-col-header">24</th><th class="day-col-header">25</th>
+                  <th class="day-col-header">26</th><th class="day-col-header">27</th><th class="day-col-header">28</th><th class="day-col-header">29</th><th class="day-col-header">30</th><th class="day-col-header">31</th>
+                </tr>
+              </thead>
+              <tbody id="employeeTableBody"></tbody>
+            </table>
+          </div>
           
           <!-- Action Buttons -->
           <div class="row mt-4 no-print">
@@ -455,10 +402,15 @@
       }).then((result) => {
         if (result.isConfirmed) {
           // Add new row to table
-          const tbody = document.querySelector('tbody');
+          const tbody = document.getElementById('employeeTableBody');
           const rowCount = tbody.children.length + 1;
           const newRow = createEmployeeRow(rowCount, result.value.name, result.value.designation);
           tbody.appendChild(newRow);
+
+          // Ensure day cells match current month and are inputtable
+          const daysInMonth = document.querySelectorAll('#dayHeaders th').length || 31;
+          updateEmployeeRows(daysInMonth);
+          calculateTotals();
           
           Swal.fire('Success!', 'Employee added successfully', 'success');
         }
@@ -476,19 +428,24 @@
         <td>${number}</td>
         <td class="employee-name">${name}</td>
         <td class="designation">${designation}</td>
-        <!-- July 1-15 -->
+        <!-- Placeholder day cells (will be replaced according to month) -->
         <td></td><td></td><td></td><td></td><td></td>
         <td></td><td></td><td></td><td></td><td></td>
         <td></td><td></td><td></td><td></td><td></td>
-        <!-- July 16-31 -->
         <td></td><td></td><td></td><td></td><td></td>
         <td></td><td></td><td></td><td></td><td></td>
         <td></td><td></td><td></td><td></td><td></td><td></td>
-        <!-- Totals -->
-        <td>0</td>
-        <td>0.00</td>
-        <td>0</td>
-        <td>₱ 0.00</td>
+        <!-- After day cells: Deduction | Total Hours/Day | Rate | Total Honorarium -->
+        <td>
+          <input type="number" class="form-control form-control-sm deduction-input" min="0" step="0.25" value="0" title="Deduction (hours)">
+        </td>
+        <td class="total-units-cell">0.00</td>
+        <td>
+          <div class="input-group input-group-sm">
+            <input type="number" class="form-control rate-input" min="0" step="0.01" value="0" title="Rate value">
+          </div>
+        </td>
+        <td class="total-honorarium-cell">₱ 0.00</td>
         <!-- Actions -->
         <td class="no-print">
           <button type="button" class="btn btn-danger btn-sm delete-employee" 
@@ -504,55 +461,80 @@
 
     // Edit Mode Function
     function editMode() {
-      const cells = document.querySelectorAll('tbody td:not(.employee-name):not(.designation):not(:first-child)');
-      cells.forEach(cell => {
-        if (!cell.querySelector('input')) {
-          const currentValue = cell.textContent.trim();
-          cell.innerHTML = `<input type="text" class="form-control form-control-sm" value="${currentValue}" style="min-width: 60px;">`;
+      // Only transform day cells into inputs; keep control cells (deduction/rate) as inputs
+      const rows = document.querySelectorAll('#employeeTableBody tr');
+      rows.forEach(row => {
+        // Day cells are between designation and the control columns
+        const cells = row.querySelectorAll('td');
+        // Find index of the first control column (deduction) by class marker if present
+        let controlIndex = -1;
+        cells.forEach((c, idx) => { if (c.querySelector('.deduction-input')) controlIndex = idx; });
+
+        for (let i = 4; i < (controlIndex > -1 ? controlIndex : cells.length); i++) {
+          const cell = cells[i];
+          if (!cell.querySelector('input')) {
+            const currentValue = cell.textContent.trim();
+            cell.innerHTML = `<input type="number" class="form-control form-control-sm day-input" min="0" step="0.25" value="${currentValue}">`;
+          }
         }
       });
-      
       Swal.fire('Edit Mode', 'You can now edit the values in the table', 'info');
     }
 
     // Save Changes Function
     function saveChanges() {
-      const inputs = document.querySelectorAll('tbody input');
-      inputs.forEach(input => {
-        const cell = input.parentElement;
-        cell.textContent = input.value;
+      // Only persist day inputs into text and keep controls for rate/deduction
+      const rows = document.querySelectorAll('#employeeTableBody tr');
+      rows.forEach(row => {
+        // Convert day inputs to plain text
+        const dayInputs = row.querySelectorAll('.day-input');
+        dayInputs.forEach(input => {
+          const td = input.parentElement;
+          td.textContent = input.value;
+        });
       });
-      
+
       calculateTotals();
       Swal.fire('Saved!', 'Changes have been saved successfully', 'success');
     }
 
     // Calculate Totals Function
     function calculateTotals() {
-      const rows = document.querySelectorAll('tbody tr');
-      
+      const rows = document.querySelectorAll('#employeeTableBody tr');
+
       rows.forEach(row => {
-        const cells = row.querySelectorAll('td');
+        // Sum all day inputs as hours
+        const dayInputs = row.querySelectorAll('.day-input');
         let totalHours = 0;
-        
-        // Calculate total hours from day columns (columns 3-34)
-        for (let i = 3; i < 34; i++) {
-          const value = parseFloat(cells[i].textContent) || 0;
-          totalHours += value;
-        }
-        
-        // Update total hours cell
-        if (cells[35]) cells[35].textContent = totalHours.toFixed(2);
-        
-        // Calculate total honorarium (assuming rate per unit is in column 36)
-        const rate = parseFloat(cells[36]?.textContent) || 0;
-        const totalHonorarium = totalHours * rate;
-        
-        // Update total honorarium cell
-        if (cells[37]) cells[37].textContent = `₱ ${totalHonorarium.toFixed(2)}`;
+        dayInputs.forEach(input => {
+          totalHours += parseFloat(input.value) || 0;
+        });
+
+        // Deduction in hours
+        const deductionInput = row.querySelector('.deduction-input');
+        const deductionHours = deductionInput ? (parseFloat(deductionInput.value) || 0) : 0;
+
+        // Rate and basis
+        const rateInput = row.querySelector('.rate-input');
+        const rate = rateInput ? (parseFloat(rateInput.value) || 0) : 0;
+        const basisSelect = row.querySelector('.rate-basis');
+        const basis = basisSelect ? basisSelect.value : 'hour';
+
+        const HOURS_PER_DAY = 8; // conversion used when basis is per day
+
+        // Compute billable units (hours or days depending on basis)
+        const netHours = Math.max(totalHours - deductionHours, 0);
+        const units = basis === 'hour' ? netHours : (netHours / HOURS_PER_DAY);
+
+        // Update total units (Hours/Day column)
+        const totalUnitsCell = row.querySelector('.total-units-cell');
+        if (totalUnitsCell) totalUnitsCell.textContent = units.toFixed(2);
+
+        // Compute and update Total Honorarium
+        const totalHonorariumCell = row.querySelector('.total-honorarium-cell');
+        const honorarium = units * rate;
+        if (totalHonorariumCell) totalHonorariumCell.textContent = `₱ ${honorarium.toFixed(2)}`;
       });
-      
-      Swal.fire('Calculated!', 'All totals have been recalculated', 'success');
     }
 
     // Export to Excel Function
@@ -607,7 +589,7 @@
 
     // Renumber table rows after deletion
     function renumberRows() {
-      const rows = document.querySelectorAll('tbody tr');
+      const rows = document.querySelectorAll('#employeeTableBody tr');
       rows.forEach((row, index) => {
         const numberCell = row.querySelector('td:first-child');
         if (numberCell) {
@@ -807,18 +789,37 @@
       // Clear existing day headers
       dayHeadersRow.innerHTML = '';
       
+      // Utilities to compute weekday labels
+      const month = parseInt(document.getElementById('monthSelect').value); // 1-12
+      const year = parseInt(document.getElementById('yearSelect').value);
+      const dows = ['S','M','T','W','TH','F','S'];
+
+      const makeDayHeader = (day, isFirstHalf) => {
+        const th = document.createElement('th');
+        th.classList.add('day-header');
+        th.classList.add(isFirstHalf ? 'first-half' : 'second-half');
+        // Build stacked number and weekday
+        const num = document.createElement('div');
+        num.className = 'day-num';
+        num.textContent = day;
+        const dow = document.createElement('div');
+        dow.className = 'day-dow';
+        // JS Date: month is 0-based
+        const dateObj = new Date(year, month - 1, day);
+        dow.textContent = dows[dateObj.getDay()];
+        th.appendChild(num);
+        th.appendChild(dow);
+        return th;
+      };
+
       // Add first half days
       for (let i = 1; i <= midPoint; i++) {
-        const th = document.createElement('th');
-        th.textContent = i;
-        dayHeadersRow.appendChild(th);
+        dayHeadersRow.appendChild(makeDayHeader(i, true));
       }
       
       // Add second half days
       for (let i = midPoint + 1; i <= daysInMonth; i++) {
-        const th = document.createElement('th');
-        th.textContent = i;
-        dayHeadersRow.appendChild(th);
+        dayHeadersRow.appendChild(makeDayHeader(i, false));
       }
     }
 
@@ -837,7 +838,7 @@
 
     // Update Employee Rows Function
     function updateEmployeeRows(daysInMonth) {
-      const rows = document.querySelectorAll('tbody tr');
+      const rows = document.querySelectorAll('#employeeTableBody tr');
       const midPoint = Math.ceil(daysInMonth / 2);
       
       rows.forEach(row => {
@@ -857,21 +858,30 @@
           }
         }
         
-        // Add new day cells based on daysInMonth
+        // Add new day cells based on daysInMonth (numeric inputs)
         const nameCell = cells[3]; // Designation cell
         
+        const makeDayInput = () => {
+          const newCell = document.createElement('td');
+          newCell.classList.add('day-cell');
+          newCell.innerHTML = '<input type="number" class="form-control form-control-sm day-input" min="0" step="0.25" value="">';
+          return newCell;
+        };
+        
+        // Insert day cells in correct order (append after the last inserted cell)
+        let insertionPoint = nameCell;
         // Add first half days
         for (let day = 1; day <= midPoint; day++) {
-          const newCell = document.createElement('td');
-          newCell.textContent = '';
-          nameCell.insertAdjacentElement('afterend', newCell);
+          const newCell = makeDayInput();
+          insertionPoint.insertAdjacentElement('afterend', newCell);
+          insertionPoint = newCell; // move pointer forward
         }
         
         // Add second half days
         for (let day = midPoint + 1; day <= daysInMonth; day++) {
-          const newCell = document.createElement('td');
-          newCell.textContent = '';
-          nameCell.insertAdjacentElement('afterend', newCell);
+          const newCell = makeDayInput();
+          insertionPoint.insertAdjacentElement('afterend', newCell);
+          insertionPoint = newCell; // move pointer forward
         }
       });
     }
@@ -915,12 +925,29 @@
       const currentMonth = now.getMonth() + 1;
       const currentYear = now.getFullYear();
       
-      // Only update if different from default (July 2025)
-      if (currentMonth !== 7 || currentYear !== 2025) {
-        document.getElementById('monthSelect').value = currentMonth;
-        document.getElementById('yearSelect').value = currentYear;
-        // Don't auto-update on load, let user choose
-      }
+      // Real-time: set current month/year and update headers immediately
+      document.getElementById('monthSelect').value = currentMonth;
+      document.getElementById('yearSelect').value = currentYear;
+      updateDateDisplay();
+
+      // Recalculate totals when any relevant input changes
+      document.addEventListener('input', function(e) {
+        if (
+          e.target && (
+            e.target.classList.contains('day-input') ||
+            e.target.classList.contains('deduction-input') ||
+            e.target.classList.contains('rate-input')
+          )
+        ) {
+          calculateTotals();
+        }
+      });
+      // Handle basis change (/Hour vs /Day)
+      document.addEventListener('change', function(e) {
+        if (e.target && e.target.classList.contains('rate-basis')) {
+          calculateTotals();
+        }
+      });
     });
 
     // Theme support (basic)
