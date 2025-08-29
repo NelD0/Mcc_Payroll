@@ -317,7 +317,10 @@
         <select class="form-control" id="department" name="department">
           <option value="">Select Department</option>
           @foreach($departments as $department)
-            <option value="{{ $department->code }}">{{ $department->name }} ({{ $department->code }})</option>
+            @php($code = strtolower($department->code))
+            @if(!in_array($code, ['it','ba','hm','edu']))
+              <option value="{{ $department->code }}">{{ $department->name }}</option>
+            @endif
           @endforeach
         </select>
       </div>
