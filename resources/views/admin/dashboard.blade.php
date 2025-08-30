@@ -8,7 +8,6 @@
   <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
@@ -683,11 +682,9 @@
         </div>
 
         <div class="row g-3">
-          <!-- Chart -->
 <div class="col-12">
     <div class="card-soft p-3">
-        <h6 class="mb-3">Weekly Summary</h6>
-        <canvas id="salesChart" height="90"></canvas>
+      
     </div>
 </div>
 
@@ -937,40 +934,7 @@
     });
   }
 
-    // chart
-    const ctx = document.getElementById('salesChart');
-if(ctx){
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], // 1 week only
-      datasets: [{
-        label: 'Weekly Payroll',
-        data: [10, 14, 18, 16, 22, 28, 25], // sample weekly data
-        fill: true,
-        borderColor: 'rgba(220,53,69,1)',
-        backgroundColor: 'rgba(220,53,69,.08)',
-        tension: .4,
-        pointRadius: 0,
-        borderWidth: 2
-      }]
-    },
-    options: {
-      plugins: { 
-        legend: { display: false } // hide legend
-      },
-      scales: {
-        y: { 
-          beginAtZero: true, 
-          grid: { color: 'rgba(0,0,0,.05)' }
-        },
-        x: { 
-          grid: { display: false }
-        }
-      }
-    }
-  });
-}
+
 
 // Search functionality
 let searchTimeout;
