@@ -132,7 +132,3 @@ Route::get('/bsit', [BsitController::class, 'index'])->name('bsit.index');
 Route::get('/bsba', [BsbaController::class, 'index'])->name('bsba.index');
 Route::get('/bshm', [BshmController::class, 'index'])->name('bshm.index');
 Route::get('/education', [EducationController::class, 'index'])->name('education.index');
-
-
-# <h2>Hello, {{ Auth::user()->name }}</h2> 
-# <a href="{{ url('/logout') }}" class="logout-btn">Logout</a>
