@@ -210,6 +210,20 @@
       transition: background-color 0.3s ease;
     }
 
+    /* Larger, clearer day inputs */
+    .day-column {
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
+      padding: 4px 6px;
+    }
+    .day-input {
+      height: 42px;
+      font-size: 16px;
+      padding: 6px 8px;
+      text-align: center;
+    }
+
     /* Print-specific styles */
     @media print {
       body {
@@ -363,15 +377,35 @@
             <td>{{ $timesheet->prov_abr }}</td>
             @php
               $days = $timesheet->days ?? [];
+              // Normalize to associative array day => value (0/1)
               if (is_string($days)) {
-                $days = json_decode($days, true) ?? [];
-              }
-              if (!is_array($days)) {
+                $decoded = json_decode($days, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                  $days = $decoded;
+                } else {
+                  $days = array_map('trim', explode(',', $days));
+                  $days = array_filter($days);
+                  $days = array_map('intval', $days);
+                  $newDays = [];
+                  foreach($days as $day) { $newDays[$day] = 1; }
+                  $days = $newDays;
+                }
+              } elseif (!is_array($days)) {
                 $days = [];
               }
             @endphp
             @for($i = 1; $i <= 15; $i++)
-              <td>{{ in_array($i, $days) ? '✓' : '' }}</td>
+              <td class="day-column">
+                <input type="number"
+                       class="form-control day-input"
+                       value="{{ isset($days[$i]) ? $days[$i] : '' }}"
+                       min="0"
+                       max="1"
+                       step="1"
+                       data-timesheet-id="{{ $timesheet->id }}"
+                       data-day="{{ $i }}"
+                       placeholder="0">
+              </td>
             @endfor
             <td>{{ $timesheet->total_days }}</td>
             <td>₱{{ number_format($timesheet->rate_per_day, 2) }}</td>
