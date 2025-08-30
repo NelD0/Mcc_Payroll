@@ -151,8 +151,14 @@ class DashboardController extends Controller
             $results = $results->concat($employees);
         }
         
-        // Remove duplicates and limit results
-        $results = $results->unique('name')->take(15);
+        // Remove duplicates, exclude specific entries, and limit results
+        $results = $results
+            // Exclude "John Smith" from suggestions
+            ->reject(function ($item) {
+                return isset($item['name']) && strtolower(trim($item['name'])) === 'john smith';
+            })
+            ->unique('name')
+            ->take(15);
         
         return response()->json($results->values());
     }
