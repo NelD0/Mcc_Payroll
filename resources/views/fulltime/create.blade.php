@@ -326,23 +326,28 @@
       </div>
 
       <div class="mb-3">
-        <label for="days" class="form-label">Working Days</label>
+        <label for="days" class="form-label">Working Days (Hours per Day)</label>
         <div class="days-selector mb-2">
           <div class="row">
             @for($i = 1; $i <= 15; $i++)
-              <div class="col-md-3 col-sm-4 col-6 mb-2">
-                <div class="form-check">
-                  <input class="form-check-input day-checkbox" type="checkbox" value="{{ $i }}" id="day{{ $i }}">
-                  <label class="form-check-label" for="day{{ $i }}">
-                    Day {{ $i }}
-                  </label>
-                </div>
+              <div class="col-md-4 col-sm-6 col-12 mb-3">
+                <label class="form-label" for="day{{ $i }}">Day {{ $i }} Hours</label>
+                <input
+                  type="number"
+                  class="form-control day-hours"
+                  id="day{{ $i }}"
+                  name="days[{{ $i }}]"
+                  min="0"
+                  max="24"
+                  step="0.25"
+                  value=""
+                  placeholder="0"
+                >
               </div>
             @endfor
           </div>
         </div>
-        <input type="hidden" class="form-control" id="days" name="days" placeholder="Selected days will appear here">
-        <small class="form-text text-muted">Select the working days for this timesheet</small>
+        <small class="form-text text-muted">Enter the number of hours worked for each day. Leave blank for 0.</small>
       </div>
 
       <div class="mb-3">
@@ -445,16 +450,26 @@
       }, 5000);
     });
 
-    // Handle days selection
-    function updateDaysField() {
-      const checkboxes = document.querySelectorAll('.day-checkbox:checked');
-      const selectedDays = Array.from(checkboxes).map(cb => cb.value);
-      document.getElementById('days').value = selectedDays.join(',');
+    // Handle per-day hours inputs -> compute total hours and update display
+    function getTotalHoursFromDaysInputs() {
+      const inputs = document.querySelectorAll('.day-hours');
+      let total = 0;
+      inputs.forEach(inp => {
+        const v = parseFloat(inp.value);
+        if (!isNaN(v) && v > 0) total += v;
+      });
+      return total;
     }
 
-    // Add event listeners to day checkboxes
-    document.querySelectorAll('.day-checkbox').forEach(checkbox => {
-      checkbox.addEventListener('change', updateDaysField);
+    // Recalculate total hours when day inputs change
+    document.querySelectorAll('.day-hours').forEach(input => {
+      input.addEventListener('input', () => {
+        // Update total_hour input with the sum of day hours
+        const total = getTotalHoursFromDaysInputs();
+        const totalHourEl = document.getElementById('total_hour');
+        if (totalHourEl) totalHourEl.value = total.toFixed(2);
+        calculateTotal();
+      });
     });
 
     // Auto-calculate total honorarium
