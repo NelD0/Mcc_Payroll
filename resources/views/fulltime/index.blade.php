@@ -334,6 +334,16 @@
       font-size: 9px;
       color: #666;
     }
+
+    /* Highlight Monday to Saturday labels */
+    .weekday-label {
+      font-weight: 700;
+      color: #000000; /* darker for contrast */
+      background-color: #fff3cd; /* light highlight */
+      padding: 2px 4px;
+      border-radius: 4px;
+      display: inline-block;
+    }
     
     /* Empty state styling */
     .empty-state {
@@ -519,22 +529,28 @@
             <th rowspan="2">TOTAL HONORARIUM</th>
             <th rowspan="2" class="actions-column">Actions</th>
           </tr>
+          @php
+            // Auto-switch days: 1-15 for first half, 16-30 for second half
+            $now = \Carbon\Carbon::now();
+            $dayNumbers = ($now->day > 15) ? range(16, 30) : range(1, 15);
+          @endphp
           <tr>
-            <th class="day-header">1<br><small>F</small></th>
-            <th class="day-header">2<br><small>S</small></th>
-            <th class="day-header">3<br><small>S</small></th>
-            <th class="day-header">4<br><small>M</small></th>
-            <th class="day-header">5<br><small>T</small></th>
-            <th class="day-header">6<br><small>W</small></th>
-            <th class="day-header">7<br><small>TH</small></th>
-            <th class="day-header">8<br><small>F</small></th>
-            <th class="day-header">9<br><small>S</small></th>
-            <th class="day-header">10<br><small>S</small></th>
-            <th class="day-header">11<br><small>M</small></th>
-            <th class="day-header">12<br><small>T</small></th>
-            <th class="day-header">13<br><small>W</small></th>
-            <th class="day-header">14<br><small>TH</small></th>
-            <th class="day-header">15<br><small>F</small></th>
+            @foreach($dayNumbers as $d)
+              @php
+                // Build a valid date for the current month if possible
+                $dateObj = $d <= $now->daysInMonth ? $now->copy()->day($d) : null;
+                $title = $dateObj ? $dateObj->format('F j, l') : 'Day ' . $d;
+                $weekday = $dateObj ? $dateObj->format('l') : '';
+              @endphp
+              <th class="day-header" title="{{ $title }}">
+                {{ $d }}<br>
+                @if($weekday && in_array($weekday, ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']))
+                  <small class="weekday-label">{{ $weekday }}</small>
+                @else
+                  <small>{{ $weekday }}</small>
+                @endif
+              </th>
+            @endforeach
           </tr>
         </thead>
         <tbody>
@@ -576,7 +592,7 @@
                 $days = [];
               }
             @endphp
-            @for($i = 1; $i <= 15; $i++)
+            @foreach($dayNumbers as $i)
               <td class="day-column">
                 <input type="number" 
                        class="form-control day-input" 
@@ -588,7 +604,7 @@
                        data-day="{{ $i }}"
                        placeholder="0">
               </td>
-            @endfor
+            @endforeach
             <td>
               <input type="text" 
                      class="form-control field-input" 
