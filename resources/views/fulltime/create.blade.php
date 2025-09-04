@@ -314,13 +314,17 @@
 
       <div class="mb-3">
         <label for="department" class="form-label">Department</label>
-        <select class="form-control" id="department" name="department">
-          <option value="">Select Department</option>
+        <select class="form-control" id="department" name="department" required>
+          <option value="" disabled selected>Select Department</option>
+          <!-- Fixed options to match enum -->
+          <option value="BSIT">BSIT</option>
+          <option value="BSBA">BSBA</option>
+          <option value="BSHM">BSHM</option>
+          <option value="EDUCATION">EDUCATION</option>
+          
+          <!-- Dynamic options, if you still want to show other active departments -->
           @foreach($departments as $department)
-            @php($code = strtolower($department->code))
-            @if(!in_array($code, ['it','ba','hm','edu']))
-              <option value="{{ $department->code }}">{{ $department->name }}</option>
-            @endif
+            <option value="{{ $department->code }}">{{ $department->name }}</option>
           @endforeach
         </select>
       </div>
@@ -329,9 +333,11 @@
         <label for="days" class="form-label">Working Days (Hours per Day)</label>
         <div class="days-selector mb-2">
           <div class="row">
-            @for($i = 1; $i <= 15; $i++)
+            @php($days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'])
+            @foreach($days as $index => $day)
+              @php($i = $index + 1) <!-- Keep numeric keys 1..6 for backend compatibility -->
               <div class="col-md-4 col-sm-6 col-12 mb-3">
-                <label class="form-label" for="day{{ $i }}">Day {{ $i }} Hours</label>
+                <label class="form-label" for="day{{ $i }}">{{ $day }} Hours</label>
                 <input
                   type="number"
                   class="form-control day-hours"
@@ -344,10 +350,10 @@
                   placeholder="0"
                 >
               </div>
-            @endfor
+            @endforeach
           </div>
         </div>
-        <small class="form-text text-muted">Enter the number of hours worked for each day. Leave blank for 0.</small>
+        <small class="form-text text-muted">Enter the number of hours worked for each day (Monday–Saturday). Leave blank for 0.</small>
       </div>
 
       <div class="mb-3">
