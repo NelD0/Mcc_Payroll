@@ -335,6 +335,26 @@
       color: #666;
     }
 
+    /* Day header styles to mimic sample */
+    .day-header { position: relative; }
+    .day-number {
+      display: inline-block;
+      color: #000; /* black */
+      font-size: 16px; /* bigger number */
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .day-abbr {
+      display: inline-block;
+      color: #000; /* black */
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .current-day { background-color: #f7c79a !important; }
+    /* Tighten cell spacing similar to the image */
+    .day-header, .day-column { padding: 6px 4px; }
+
     /* Highlight Monday to Saturday labels */
     .weekday-label {
       font-weight: 700;
@@ -532,23 +552,21 @@
           @php
             // Auto-switch days: 1-15 for first half, 16-30 for second half
             $now = \Carbon\Carbon::now();
-            $dayNumbers = ($now->day > 15) ? range(16, 30) : range(1, 15);
+            $dayNumbers = ($now->day > 15) ? range(16, min(30, $now->daysInMonth)) : range(1, 15);
           @endphp
           <tr>
             @foreach($dayNumbers as $d)
               @php
-                // Build a valid date for the current month if possible
                 $dateObj = $d <= $now->daysInMonth ? $now->copy()->day($d) : null;
                 $title = $dateObj ? $dateObj->format('F j, l') : 'Day ' . $d;
-                $weekday = $dateObj ? $dateObj->format('l') : '';
+                $weekday = $dateObj ? $dateObj->format('D') : '';
+                // Use single-letter or two-letter abbreviation, TH for Thu
+                $abbr = $dateObj ? ($dateObj->format('D') === 'Thu' ? 'TH' : strtoupper(substr($dateObj->format('D'),0,1))) : '';
+                $isToday = $dateObj && $dateObj->isToday();
               @endphp
               <th class="day-header" title="{{ $title }}">
-                {{ $d }}<br>
-                @if($weekday && in_array($weekday, ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']))
-                  <small class="weekday-label">{{ $weekday }}</small>
-                @else
-                  <small>{{ $weekday }}</small>
-                @endif
+                <span class="day-number">{{ $d }}</span><br>
+                <span class="day-abbr">{{ $abbr }}</span>
               </th>
             @endforeach
           </tr>
@@ -570,22 +588,17 @@
             @php
               $days = $timesheet->days ?? [];
               
-              // Handle different data formats
+              // Normalize stored days into associative array: dayNumber => hours
               if (is_string($days)) {
-                // Try to decode as JSON first
                 $decoded = json_decode($days, true);
                 if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                   $days = $decoded;
                 } else {
-                  // If not JSON, try to split by comma
                   $days = array_map('trim', explode(',', $days));
-                  $days = array_filter($days); // Remove empty values
-                  $days = array_map('intval', $days); // Convert to integers
-                  // Convert to associative array with day => hours format
+                  $days = array_filter($days);
+                  $days = array_map('intval', $days);
                   $newDays = [];
-                  foreach($days as $day) {
-                    $newDays[$day] = 8; // Default 8 hours for existing days
-                  }
+                  foreach($days as $day) { $newDays[$day] = 8; }
                   $days = $newDays;
                 }
               } elseif (!is_array($days)) {
@@ -594,13 +607,13 @@
             @endphp
             @foreach($dayNumbers as $i)
               <td class="day-column">
-                <input type="number" 
-                       class="form-control day-input" 
-                       value="{{ isset($days[$i]) ? $days[$i] : '' }}" 
-                       min="0" 
-                       max="24" 
+                <input type="number"
+                       class="form-control day-input"
+                       value="{{ isset($days[$i]) ? $days[$i] : '' }}"
+                       min="0"
+                       max="24"
                        step="0.5"
-                       data-timesheet-id="{{ $timesheet->id }}" 
+                       data-timesheet-id="{{ $timesheet->id }}"
                        data-day="{{ $i }}"
                        placeholder="0">
               </td>
@@ -836,7 +849,7 @@
             }
           });
           
-          // Collect all day data
+          // Collect all day data (per day)
           const dayData = {};
           dayInputs.forEach(input => {
             const day = input.dataset.day;
