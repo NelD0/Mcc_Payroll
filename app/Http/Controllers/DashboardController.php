@@ -282,6 +282,84 @@ class DashboardController extends Controller
         return response()->json($stats);
     }
 
+    // --- Master List Add Employee ---
+    public function masterListAddForm(Request $request)
+    {
+        // Optional: load active departments if you have Department model/code
+        $departments = \App\Models\Department::active()->get();
+        return view('admin.master-list-add', compact('departments'));
+    }
+
+    public function masterListAddStore(Request $request)
+    {
+        $data = $request->validate([
+            'employee_name' => 'required|string|max:255',
+            'email' => 'nullable|email',
+            'employee_type' => 'required|in:fulltime,parttime,staff,utility',
+            'designation' => 'required|in:instructor,utility,staff',
+            'prov_abr' => 'nullable|string|max:10',
+            'department' => 'required|string|max:50',
+            'days' => 'array',
+            'days.*' => 'nullable|numeric|min:0|max:24',
+            'details' => 'nullable|string',
+            'total_hour' => 'nullable|numeric|min:0',
+            'rate_per_hour' => 'nullable|numeric|min:0',
+            'deduction' => 'nullable|numeric|min:0',
+        ]);
+
+        // Create/ensure Employee row
+        $employee = \App\Models\Employee::create([
+            'name' => $data['employee_name'],
+            'email' => $data['email'] ?? null,
+            'position' => match ($data['employee_type']) {
+                'fulltime' => 'Full-time Instructor',
+                'parttime' => 'Part-time Instructor',
+                'staff' => 'Staff',
+                'utility' => 'Utility',
+            },
+            'hourly_salary' => $data['rate_per_hour'] ?? 0,
+            'department_id' => null,
+        ]);
+
+        // Create timesheet in the selected table
+        $payload = [
+            'employee_id' => $employee->id,
+            'employee_name' => $data['employee_name'],
+            'email' => $data['email'] ?? null,
+            'designation' => $data['designation'],
+            'prov_abr' => $data['prov_abr'] ?? null,
+            'department' => $data['department'],
+            'days' => isset($data['days']) ? json_encode($data['days']) : (isset($data['days_json']) ? $data['days_json'] : json_encode([])),
+            'details' => $data['details'] ?? null,
+            'total_hour' => $data['total_hour'] ?? 0,
+            'rate_per_hour' => $data['rate_per_hour'] ?? 0,
+            'deduction' => $data['deduction'] ?? 0,
+            'total_honorarium' => max(0, (($data['total_hour'] ?? 0) * ($data['rate_per_hour'] ?? 0)) - ($data['deduction'] ?? 0)),
+        ];
+
+        switch ($data['employee_type']) {
+            case 'fulltime':
+                \App\Models\FulltimeTimesheet::create($payload);
+                $redirect = route('fulltime.index');
+                break;
+            case 'parttime':
+                // Part-time days in UI is checkbox list in its own create view. We accept numeric-indexed days like fulltime here.
+                \App\Models\ParttimeTimesheet::create($payload);
+                $redirect = route('parttime.index');
+                break;
+            case 'staff':
+                \App\Models\StaffTimesheet::create($payload);
+                $redirect = route('staff.index');
+                break;
+            case 'utility':
+                \App\Models\UtilityTimesheet::create($payload);
+                $redirect = route('utility.index');
+                break;
+        }
+
+        return redirect($redirect)->with('success', 'Employee added successfully.');
+    }
+
     /**
      * Get detailed employee statistics for debugging
      *
@@ -532,13 +610,15 @@ class DashboardController extends Controller
                 $fulltimeQuery->where('department', $selectedDepartment);
             }
             
-            $fulltimeEmployees = $fulltimeQuery->select('id', 'employee_name', 'designation', 'department', 'created_at')
+            $fulltimeEmployees = $fulltimeQuery->select('id', 'employee_name', 'designation', 'department', 'rate_per_hour', 'created_at')
                 ->orderBy('department')
                 ->orderBy('employee_name')
                 ->get()
                 ->map(function ($employee) {
                     $employee->type = 'Full-time Instructor';
                     $employee->department = $employee->department ?? 'N/A';
+                    // Normalize rate for view
+                    $employee->rate = $employee->rate_per_hour;
                     return $employee;
                 });
             
@@ -553,13 +633,15 @@ class DashboardController extends Controller
                 $parttimeQuery->where('department', $selectedDepartment);
             }
             
-            $parttimeEmployees = $parttimeQuery->select('id', 'employee_name', 'designation', 'department', 'created_at')
+            $parttimeEmployees = $parttimeQuery->select('id', 'employee_name', 'designation', 'department', 'rate_per_hour', 'created_at')
                 ->orderBy('department')
                 ->orderBy('employee_name')
                 ->get()
                 ->map(function ($employee) {
                     $employee->type = 'Part-time Instructor';
                     $employee->department = $employee->department ?? 'N/A';
+                    // Normalize rate for view
+                    $employee->rate = $employee->rate_per_hour;
                     return $employee;
                 });
             
@@ -568,12 +650,14 @@ class DashboardController extends Controller
         
         // Get staff employees (only if filtering for all or staff)
         if ($selectedDepartment === 'all' || $selectedDepartment === 'staff') {
-            $staffEmployees = StaffTimesheet::select('id', 'employee_name', 'designation', 'created_at')
+            $staffEmployees = StaffTimesheet::select('id', 'employee_name', 'designation', 'rate_per_day', 'created_at')
                 ->orderBy('employee_name')
                 ->get()
                 ->map(function ($employee) {
                     $employee->type = 'Staff';
                     $employee->department = null; // Staff don't have departments
+                    // Normalize rate for view
+                    $employee->rate = $employee->rate_per_day;
                     return $employee;
                 });
             
@@ -582,12 +666,14 @@ class DashboardController extends Controller
         
         // Get utility employees (only if filtering for all or utility)
         if ($selectedDepartment === 'all' || $selectedDepartment === 'utility') {
-            $utilityEmployees = UtilityTimesheet::select('id', 'employee_name', 'designation', 'created_at')
+            $utilityEmployees = UtilityTimesheet::select('id', 'employee_name', 'designation', 'rate_per_day', 'created_at')
                 ->orderBy('employee_name')
                 ->get()
                 ->map(function ($employee) {
                     $employee->type = 'Utility';
                     $employee->department = null; // Utility don't have departments
+                    // Normalize rate for view
+                    $employee->rate = $employee->rate_per_day;
                     return $employee;
                 });
             
