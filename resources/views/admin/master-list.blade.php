@@ -337,6 +337,10 @@
               </span>
             </div>
             
+            <a href="{{ route('master.list.add') }}" class="btn btn-primary btn-action">
+              <i class="bi bi-person-plus me-1"></i>Add Employee
+            </a>
+            
             <button type="button" class="btn btn-danger btn-action" id="deleteSelectedBtn" disabled>
               <i class="bi bi-trash me-1"></i>Delete Selected
             </button>
@@ -365,6 +369,8 @@
                 <th>Type</th>
                 <th>Department</th>
                 <th>Designation</th>
+                <th>Rate</th>
+                <th class="no-print">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -401,10 +407,32 @@
                     @endif
                   </td>
                   <td>{{ $employee->designation ?? 'N/A' }}</td>
+                  <td>
+                    @php
+                      $rate = $employee->rate ?? null;
+                      $unit = strpos(strtolower($employee->type), 'instructor') !== false ? '' : '/day';
+                    @endphp
+                    {{ $rate !== null ? '₱ '.number_format((float)$rate, 2).($unit ? ' '.$unit : '') : 'N/A' }}
+                  </td>
+                  <td class="no-print">
+                    @php
+                      $typeRoute = $employee->type === 'Staff' ? 'staff' : ($employee->type === 'Utility' ? 'utility' : ($employee->type === 'Full-time Instructor' ? 'fulltime' : 'parttime'));
+                    @endphp
+                    <div class="btn-group btn-group-sm" role="group">
+                      <a class="btn btn-outline-primary" href="{{ route($typeRoute.'.show', $employee->id) }}" title="View"><i class="bi bi-eye"></i></a>
+                      <a class="btn btn-outline-secondary" href="{{ route($typeRoute.'.edit', $employee->id) }}" title="Edit"><i class="bi bi-pencil"></i></a>
+                      <button type="button" class="btn btn-outline-danger" title="Delete" onclick="(function(){
+                        const t='{{ strtolower($employee->type) }}'.includes('staff')?'staff':('{{ strtolower($employee->type) }}'.includes('utility')?'utility':('{{ strtolower($employee->type) }}'.includes('full')?'fulltime':'parttime'));
+                        deleteEmployees(t==='staff'?[{{ $employee->id }}]:[], t==='utility'?[{{ $employee->id }}]:[], t==='fulltime'?[{{ $employee->id }}]:[], t==='parttime'?[{{ $employee->id }}]:[]);
+                      })()">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               @empty
                 <tr>
-                  <td colspan="5" class="text-center py-4">
+                  <td colspan="7" class="text-center py-4">
                     <div class="text-muted">
                       <i class="bi bi-inbox display-4 d-block mb-2"></i>
                       <h6>No employees found</h6>
