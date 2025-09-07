@@ -13,7 +13,7 @@
       font-family: "Segoe UI", Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background: #dc3545; /* Red background */
+      background: #add8e6; /* Light blue background */
       min-height: 100vh;
       display: flex;
       align-items: flex-start;
