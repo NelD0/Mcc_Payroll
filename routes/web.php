@@ -95,6 +95,8 @@ Route::get('/api/instructors-by-rate', [DashboardController::class, 'getInstruct
 
 // Master List Routes
 Route::get('/master-list', [DashboardController::class, 'masterList'])->name('master.list');
+Route::get('/master-list/add', [DashboardController::class, 'masterListAddForm'])->name('master.list.add');
+Route::post('/master-list/add', [DashboardController::class, 'masterListAddStore'])->name('master.list.add.store');
 Route::post('/master-list/delete-selected', [DashboardController::class, 'deleteSelected'])->name('master.list.delete');
 Route::post('/master-list/print-data', [DashboardController::class, 'getPrintData'])->name('master.list.print');
 Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
