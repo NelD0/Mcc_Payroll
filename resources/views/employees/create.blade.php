@@ -133,14 +133,15 @@
 
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label for="position" class="form-label">Position <span class="text-danger">*</span></label>
-          <select class="form-select @error('position') is-invalid @enderror" id="position" name="position" required>
-            <option value="">Select Position</option>
-            <option value="Instructor" {{ old('position') == 'Instructor' ? 'selected' : '' }}>Instructor</option>
-            <option value="Staff" {{ old('position') == 'Staff' ? 'selected' : '' }}>Staff</option>
-            <option value="Utility" {{ old('position') == 'Utility' ? 'selected' : '' }}>Utility</option>
+          <label for="type" class="form-label">Employment Type <span class="text-danger">*</span></label>
+          <select class="form-select @error('type') is-invalid @enderror" id="type" name="type" required>
+            <option value="">Select Employment Type</option>
+            <option value="Full-time Instructor" {{ old('type') == 'Full-time Instructor' ? 'selected' : '' }}>Full-time Instructor</option>
+            <option value="Part-time Instructor" {{ old('type') == 'Part-time Instructor' ? 'selected' : '' }}>Part-time Instructor</option>
+            <option value="Staff" {{ old('type') == 'Staff' ? 'selected' : '' }}>Staff</option>
+            <option value="Utility" {{ old('type') == 'Utility' ? 'selected' : '' }}>Utility</option>
           </select>
-          @error('position')
+          @error('type')
             <div class="invalid-feedback">{{ $message }}</div>
           @enderror
         </div>
