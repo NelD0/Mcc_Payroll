@@ -42,7 +42,7 @@ Route::post('/index', [LoginController::class, 'authenticate']);
 Route::get('/admin/login', function () {
     return view('admin.login');
 })->name('admin.login.form');
-Route::post('/admin/login', [AdminController::class, 'login'])->name('admin.login')->middleware('throttle:3,1');
+Route::post('/admin/login', [AdminController::class, 'login'])->name('admin.login')->middleware('throttle:15,1');
 
 // Admin dashboard route
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
