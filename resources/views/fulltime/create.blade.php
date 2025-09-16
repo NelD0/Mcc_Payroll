@@ -478,36 +478,35 @@
       });
     });
 
-    // Auto-calculate total honorarium
-    function calculateTotal() {
-      const totalHour = parseFloat(document.getElementById('total_hour').value) || 0;
-      const ratePerHour = parseFloat(document.getElementById('rate_per_hour').value) || 0;
-      const deduction = parseFloat(document.getElementById('deduction').value) || 0;
-      
-      const totalHonorarium = (totalHour * ratePerHour) - deduction;
-      const calculatedValue = totalHonorarium < 0 ? 0 : totalHonorarium;
-      
-      // Update the display
-      document.getElementById('calculated-total').textContent = '₱' + calculatedValue.toFixed(2);
-      
-      // Add visual feedback
-      const display = document.querySelector('.total-display');
-      if (calculatedValue > 0) {
-        display.style.borderColor = '#198754';
-        display.querySelector('.amount').style.color = '#198754';
-      } else {
-        display.style.borderColor = '#dc3545';
-        display.querySelector('.amount').style.color = '#dc3545';
-      }
+    // Auto-calculate total honorarium (manual hours)
+  function calculateTotal() {
+    const totalHour = parseFloat(document.getElementById('total_hour').value) || 0;
+    const ratePerHour = parseFloat(document.getElementById('rate_per_hour').value) || 0;
+    const deduction = parseFloat(document.getElementById('deduction').value) || 0;
+    
+    const totalHonorarium = (totalHour * ratePerHour) - deduction;
+    const calculatedValue = totalHonorarium < 0 ? 0 : totalHonorarium;
+    
+    document.getElementById('calculated-total').textContent =
+      '₱' + calculatedValue.toFixed(2);
+
+    const display = document.querySelector('.total-display');
+    if (calculatedValue > 0) {
+      display.style.borderColor = '#198754';
+      display.querySelector('.amount').style.color = '#198754';
+    } else {
+      display.style.borderColor = '#dc3545';
+      display.querySelector('.amount').style.color = '#dc3545';
     }
+  }
 
-    // Add event listeners for auto-calculation
-    document.getElementById('total_hour').addEventListener('input', calculateTotal);
-    document.getElementById('rate_per_hour').addEventListener('input', calculateTotal);
-    document.getElementById('deduction').addEventListener('input', calculateTotal);
+  // Event listeners only for honorarium fields
+  document.getElementById('total_hour').addEventListener('input', calculateTotal);
+  document.getElementById('rate_per_hour').addEventListener('input', calculateTotal);
+  document.getElementById('deduction').addEventListener('input', calculateTotal);
 
-    // Initial calculation
-    calculateTotal();
+  // Initial calculation
+  calculateTotal();
   </script>
 
   <style>
