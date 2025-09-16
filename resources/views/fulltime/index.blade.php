@@ -537,38 +537,16 @@
       <table>
         <thead>
           <tr>
-            <th rowspan="2">NAMES</th>
-            <th rowspan="2">DESIGNATION</th>
-            <th rowspan="2">Prov. Abr.</th>
-            <th rowspan="2">DEPARTMENT</th>
-            <th colspan="15">Days</th>
-            <th rowspan="2">Details for<br>Inclusive Hours of Classes</th>
-            <th rowspan="2">TOTAL<br>Hour</th>
-            <th rowspan="2">Rate per<br>Hour</th>
-            <th rowspan="2">Deduction<br>Previous Cut Off</th>
-            <th rowspan="2">TOTAL HONORARIUM</th>
-            <th rowspan="2" class="actions-column">Actions</th>
-          </tr>
-          @php
-            // Auto-switch days: 1-15 for first half, 16-30 for second half
-            $now = \Carbon\Carbon::now();
-            $dayNumbers = ($now->day > 15) ? range(16, min(30, $now->daysInMonth)) : range(1, 15);
-          @endphp
-          <tr>
-            @foreach($dayNumbers as $d)
-              @php
-                $dateObj = $d <= $now->daysInMonth ? $now->copy()->day($d) : null;
-                $title = $dateObj ? $dateObj->format('F j, l') : 'Day ' . $d;
-                $weekday = $dateObj ? $dateObj->format('D') : '';
-                // Use single-letter or two-letter abbreviation, TH for Thu
-                $abbr = $dateObj ? ($dateObj->format('D') === 'Thu' ? 'TH' : strtoupper(substr($dateObj->format('D'),0,1))) : '';
-                $isToday = $dateObj && $dateObj->isToday();
-              @endphp
-              <th class="day-header" title="{{ $title }}">
-                <span class="day-number">{{ $d }}</span><br>
-                <span class="day-abbr">{{ $abbr }}</span>
-              </th>
-            @endforeach
+            <th>NAMES</th>
+            <th>DESIGNATION</th>
+            <th>Prov. Abr.</th>
+            <th>DEPARTMENT</th>
+            <th>Details for<br>Inclusive Hours of Classes</th>
+            <th>TOTAL<br>Hour</th>
+            <th>Rate per<br>Hour</th>
+            <th>Deduction<br>Previous Cut Off</th>
+            <th>TOTAL HONORARIUM</th>
+            <th class="actions-column">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -585,39 +563,7 @@
                      placeholder="Prov. Abr.">
             </td>
             <td>{{ $timesheet->department }}</td>
-            @php
-              $days = $timesheet->days ?? [];
-              
-              // Normalize stored days into associative array: dayNumber => hours
-              if (is_string($days)) {
-                $decoded = json_decode($days, true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                  $days = $decoded;
-                } else {
-                  $days = array_map('trim', explode(',', $days));
-                  $days = array_filter($days);
-                  $days = array_map('intval', $days);
-                  $newDays = [];
-                  foreach($days as $day) { $newDays[$day] = 8; }
-                  $days = $newDays;
-                }
-              } elseif (!is_array($days)) {
-                $days = [];
-              }
-            @endphp
-            @foreach($dayNumbers as $i)
-              <td class="day-column">
-                <input type="number"
-                       class="form-control day-input"
-                       value="{{ isset($days[$i]) ? $days[$i] : '' }}"
-                       min="0"
-                       max="24"
-                       step="0.5"
-                       data-timesheet-id="{{ $timesheet->id }}"
-                       data-day="{{ $i }}"
-                       placeholder="0">
-              </td>
-            @endforeach
+
             <td>
               <input type="text" 
                      class="form-control field-input" 
@@ -666,7 +612,7 @@
           </tr>
           @empty
           <tr>
-            <td colspan="22" class="text-center py-5">
+            <td colspan="10" class="text-center py-5">
               <div class="empty-state">
                 <i class="bi bi-inbox" style="font-size: 3rem; color: #6c757d; margin-bottom: 1rem;"></i>
                 <h5 class="text-muted">No Timesheet Records Found</h5>
@@ -825,6 +771,31 @@
     // Manual save functionality only
     document.addEventListener('DOMContentLoaded', function() {
 
+      document.querySelectorAll('.day-input').forEach(input => {
+  input.addEventListener('change', function () {
+    const value = this.value.trim();
+    const dayAttr = this.dataset.day;  // e.g. "mon-1"
+    if (!dayAttr) return;
+
+    const [weekday, num] = dayAttr.split('-');
+    const posNum = parseInt(num, 10);
+    let targetPos = null;
+
+    // For cutoff 1-15: 1-6 → 8-13
+    if (posNum >= 1 && posNum <= 6) targetPos = posNum + 7;
+
+    // For cutoff 16-30: 16-21 → 23-28
+    if (posNum >= 16 && posNum <= 21) targetPos = posNum + 7;
+
+    if (targetPos) {
+      const selector = `.day-input[data-day="${weekday}-${targetPos}"]`;
+      const target = document.querySelector(selector);
+      if (target && target.value !== value) {
+        target.value = value;
+      }
+    }
+  });
+});
 
 
       // Save button functionality
