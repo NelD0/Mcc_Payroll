@@ -555,34 +555,13 @@
             <i class="bi bi-box-arrow-right"></i>
           </a>
         </div>
-        
-        <!-- Mobile toggler -->
-        <button class="btn btn-outline-secondary d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#mobileTopbarMenu" aria-controls="mobileTopbarMenu" aria-expanded="false" aria-label="Toggle topbar menu">
-          <i class="bi bi-list"></i>
-        </button>
-        
-        <!-- Mobile view -->
-        <div class="collapse d-md-none w-100 mt-2" id="mobileTopbarMenu">
-          <div class="d-flex flex-column gap-2 align-items-stretch">
-            <div class="user-welcome mb-2 text-center">
-              <small class="text-muted">Welcome back, <strong class="user-name">{{ $userName ?? 'Guest' }}</strong>!</small>
-            </div>
-            <div class="search-container" style="width:260px;">
-            <div class="input-group">
-              <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-              <input type="search" id="searchInputMobile" class="form-control" placeholder="Search employees…" autocomplete="off">
-            </div>
-            <div id="searchDropdownMobile" class="search-dropdown"></div>
-          </div>
-            <button class="btn btn-light w-100 theme-btn" id="toggleThemeMobile">
-              <i class="bi bi-sun" id="themeIconMobile"></i> 
-              <span id="themeTextMobile"> </span>
-            </button>
-            <a href="{{ url('/logout') }}" id="logoutBtnMobile" class="btn btn-outline-danger w-100" title="Log out">
-              <i class="bi bi-box-arrow-right"></i> Logout
-            </a>
-          </div>
+        <!-- Mobile menu button -->
+        <div class="d-flex d-md-none align-items-center gap-2 ms-auto">
+          <button class="btn btn-outline-primary" id="mobileMenuBtn" aria-label="Open menu">
+            <i class="bi bi-list" style="font-size:1.5rem;"></i>
+          </button>
         </div>
+
       </div>
 
       <!-- PAGE BODY -->
@@ -691,54 +670,7 @@
         </div>
       </div>
 
-      <!-- FOOTER -->
-      <footer class="footer">
-        <div class="footer-content">
-          <div class="row g-4">
-            <!-- Company Info -->
-            <div class="col-md-4">
-              <div class="footer-section">
-                <div class="footer-logo mb-3">
-                  <i class="bi bi-building me-2"></i>MCC Payroll
-                </div>
-                <p>Streamlining payroll management for Madridejos Community College. Efficient, reliable, and secure payroll processing for all employee categories.</p>
-              </div>
-            </div>
-            
-            <!-- Quick Links -->
-            <div class="col-md-4">
-              <div class="footer-section">
-                <h6><i class="bi bi-link-45deg me-2"></i>Quick Links</h6>
-                <ul>
-                  <li>Employee Management</li>
-                  <li>Department Overview</li>
-                  <li>Payroll Reports</li>
-                  <li>History Records</li>
-                  <li>System Settings</li>
-                </ul>
-              </div>
-            </div>
-            
-            <!-- Contact & Support -->
-            <div class="col-md-4">
-              <div class="footer-section">
-                <h6><i class="bi bi-headset me-2"></i>Support & Contact</h6>
-                <ul>
-                  <li><i class="bi bi-envelope me-2"></i>support@mcc-payroll.edu</li>
-                  <li><i class="bi bi-telephone me-2"></i>+63 (032) 123-4567</li>
-                  <li><i class="bi bi-geo-alt me-2"></i>Madridejos, Cebu</li>
-                  <li><i class="bi bi-clock me-2"></i>Mon-Fri: 8:00 AM - 5:00 PM</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Footer Bottom -->
-          <div class="footer-bottom">
-            <p>&copy; {{ date('Y') }} MCC Payroll System. All rights reserved. | Developed with <i class="bi bi-heart-fill text-danger"></i> for Madridejos Community College</p>
-          </div>
-        </div>
-      </footer>
+
     </div>
   </div>
   <!-- Scripts -->
@@ -1514,6 +1446,16 @@ function printInstructorRateData(rate, data) {
     }, 1000);
   };
 }
+  // Mobile sidebar toggle
+  document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('mobileMenuBtn');
+    const sidebar = document.getElementById('sidebar');
+    if (btn && sidebar) {
+      btn.addEventListener('click', function () {
+        sidebar.classList.toggle('show');
+      });
+    }
+  });
   </script>
 </body>
 </html>
