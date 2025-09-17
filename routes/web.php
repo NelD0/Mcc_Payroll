@@ -42,7 +42,7 @@ Route::post('/index', [LoginController::class, 'authenticate']);
 Route::get('/admin/login', function () {
     return view('admin.login');
 })->name('admin.login.form');
-Route::post('/admin/login', [AdminController::class, 'login'])->name('admin.login')->middleware('throttle:15,1');
+Route::post('/admin/login', [AdminController::class, 'login'])->name('admin.login')->middleware(app()->environment('production') ? 'throttle:15,1' : []);
 
 // Admin dashboard route
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
@@ -54,18 +54,20 @@ Route::get('/salary-adjustment', [AdminController::class, 'salaryAdjustment'])->
 Route::get('/attendance/login', function () {
     return view('attendance.login');
 })->name('attendance.login.form');
-Route::post('/attendance/login', [AttendanceController::class, 'login'])->name('attendance.login')->middleware('throttle:3,1');
+Route::post('/attendance/login', [AttendanceController::class, 'login'])->name('attendance.login')->middleware(app()->environment('production') ? 'throttle:3,1' : []);
 Route::get('/attendance/dashboard', [AttendanceController::class, 'dashboard'])->name('attendance.dashboard');
 Route::get('/api/course-counts', [AttendanceController::class, 'getCourseCounts']);
 Route::get('/api/attendance-data/{course}', [AttendanceController::class, 'getAttendanceData']);
 Route::post('/api/save-attendance', [AttendanceController::class, 'saveAttendance']);
 Route::post('/api/bulk-delete-attendance', [AttendanceController::class, 'bulkDeleteAttendance']);
 
+
+
 Route::get('/register', function () {
     return view('auth.register');
 });
 
-Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:5,1');
+Route::post('/register', [RegisterController::class, 'store'])->middleware(app()->environment('production') ? 'throttle:5,1' : []);
 
 Route::get('/logout', function () {
     // Clear all session data
@@ -117,6 +119,8 @@ Route::post('/fulltime/{id}/update-field', [FulltimeTimesheetController::class, 
 
 Route::resource('parttime', ParttimeTimesheetController::class);
 Route::get('/parttime/print/all', [ParttimeTimesheetController::class, 'printAll'])->name('parttime.print');
+Route::post('/parttime/{id}/update-day', [ParttimeTimesheetController::class, 'updateDay'])->name('parttime.update.day');
+Route::post('/parttime/{id}/update-field', [ParttimeTimesheetController::class, 'updateField'])->name('parttime.update.field');
 
 Route::resource('staff', StaffTimesheetController::class);
 Route::get('/staff/print/all', [StaffTimesheetController::class, 'printAll'])->name('staff.print');
