@@ -248,7 +248,8 @@ unset($__errorArgs, $__bag); ?>
                     <option value="bsit" <?php echo e(old('course') == 'bsit' ? 'selected' : ''); ?>>BSIT (Information Technology)</option>
                     <option value="bsba" <?php echo e(old('course') == 'bsba' ? 'selected' : ''); ?>>BSBA (Business Administration)</option>
                     <option value="bshm" <?php echo e(old('course') == 'bshm' ? 'selected' : ''); ?>>BSHM (Hospitality Management)</option>
-                    <option value="education" <?php echo e(old('course') == 'education' ? 'selected' : ''); ?>>Education</option>
+                    <option value="bsed" <?php echo e(old('course') == 'bsed' ? 'selected' : ''); ?>>BSED (Secondary Education)</option>
+                    <option value="beed" <?php echo e(old('course') == 'beed' ? 'selected' : ''); ?>>BEED (Elementary Education)</option>
                 </select>
                 <?php $__errorArgs = ['course'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
