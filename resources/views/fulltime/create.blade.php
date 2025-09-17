@@ -320,7 +320,8 @@
           <option value="BSIT">BSIT</option>
           <option value="BSBA">BSBA</option>
           <option value="BSHM">BSHM</option>
-          <option value="EDUCATION">EDUCATION</option>
+          <option value="BSED">BSED</option>
+          <option value="BEED">BEED</option>
           
           <!-- Dynamic options, if you still want to show other active departments -->
           @foreach($departments as $department)
