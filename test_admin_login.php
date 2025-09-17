@@ -73,7 +73,7 @@ echo "Email: admin@mcc.edu.ph\n";
 echo "Password: admin123456\n";
 echo "Role: admin\n";
 echo "\nAttendance Login Credentials:\n";
-echo "Email: bsit@mcc.edu.ph (or bsba@mcc.edu.ph, bshm@mcc.edu.ph, education@mcc.edu.ph)\n";
+echo "Email: bsit@mcc.edu.ph (or bsba@mcc.edu.ph, bshm@mcc.edu.ph, bsed@mcc.edu.ph, beed@mcc.edu.ph)\n";
 echo "Password: bsit123456 (or respective course passwords)\n";
 echo "Role: attendance_checker\n";
 
