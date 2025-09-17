@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
   <title>Instructor Part-time Timesheet</title>
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -325,13 +326,16 @@
       width: 60px;
       min-width: 60px;
       max-width: 60px;
-      font-size: 11px;
+      font-size: 16px; /* bigger base size for header */
       line-height: 1.2;
+      font-weight: 700;
     }
     
     .day-header small {
-      font-size: 9px;
-      color: #666;
+      font-size: 22px; /* bigger weekday letters */
+      color: #000000;
+      font-weight: 800;
+      letter-spacing: 0.5px;
     }
     
     /* Empty state styling */
@@ -519,21 +523,9 @@
             <th rowspan="2" class="actions-column">Actions</th>
           </tr>
           <tr>
-            <th class="day-header">1<br><small>F</small></th>
-            <th class="day-header">2<br><small>S</small></th>
-            <th class="day-header">3<br><small>S</small></th>
-            <th class="day-header">4<br><small>M</small></th>
-            <th class="day-header">5<br><small>T</small></th>
-            <th class="day-header">6<br><small>W</small></th>
-            <th class="day-header">7<br><small>TH</small></th>
-            <th class="day-header">8<br><small>F</small></th>
-            <th class="day-header">9<br><small>S</small></th>
-            <th class="day-header">10<br><small>S</small></th>
-            <th class="day-header">11<br><small>M</small></th>
-            <th class="day-header">12<br><small>T</small></th>
-            <th class="day-header">13<br><small>W</small></th>
-            <th class="day-header">14<br><small>TH</small></th>
-            <th class="day-header">15<br><small>F</small></th>
+            <?php for($d = 1; $d <= 15; $d++): ?>
+              <th class="day-header"><span class="day-number"><?php echo e($d); ?></span><br><small class="weekday" data-day="<?php echo e($d); ?>">—</small></th>
+            <?php endfor; ?>
           </tr>
         </thead>
         <tbody>
@@ -625,7 +617,7 @@
                       title="Save Changes">
                 <i class="bi bi-check-lg"></i>
               </button>
-              <form action="<?php echo e(route('fulltime.destroy', $timesheet->id)); ?>" method="POST" style="display:inline;">
+              <form action="<?php echo e(route('parttime.destroy', $timesheet->id)); ?>" method="POST" style="display:inline;">
                 <?php echo csrf_field(); ?>
                 <?php echo method_field('DELETE'); ?>
                 <button type="submit" class="action-btn btn-delete" onclick="return confirm('Are you sure?')" title="Delete">
@@ -641,7 +633,7 @@
                 <i class="bi bi-inbox" style="font-size: 3rem; color: #6c757d; margin-bottom: 1rem;"></i>
                 <h5 class="text-muted">No Timesheet Records Found</h5>
                 <p class="text-muted mb-3">There are no fulltime timesheet entries to display.</p>
-                <a href="<?php echo e(route('fulltime.create')); ?>" class="btn btn-primary">
+                <a href="<?php echo e(route('parttime.create')); ?>" class="btn btn-primary">
                   <i class="bi bi-plus-lg me-2"></i>Add First Timesheet
                 </a>
               </div>
@@ -795,7 +787,21 @@
         // Manual save functionality only
     document.addEventListener('DOMContentLoaded', function() {
 
-
+      // Auto-copy behavior like Fulltime: days 1-6 -> 8-13
+      document.querySelectorAll('.day-input').forEach(input => {
+        input.addEventListener('change', function () {
+          const val = this.value.trim();
+          const dayNum = parseInt(this.dataset.day, 10);
+          if (!isNaN(dayNum) && dayNum >= 1 && dayNum <= 6) {
+            const targetNum = dayNum + 7; // mirror to next week, skip day 7
+            const row = this.closest('tr');
+            const target = row ? row.querySelector(`.day-input[data-day="${targetNum}"]`) : null;
+            if (target && target.value !== val) {
+              target.value = val;
+            }
+          }
+        });
+      });
 
       // Save button functionality
       const saveButtons = document.querySelectorAll('.btn-save');
@@ -841,7 +847,7 @@
         
         // Create promises for each field update
         Object.keys(fieldData).forEach(field => {
-          const promise = fetch(`/fulltime/${timesheetId}/update-field`, {
+          const promise = fetch(`/parttime/${timesheetId}/update-field`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -858,7 +864,7 @@
         
         // Create promises for each day update
         Object.keys(dayData).forEach(day => {
-          const promise = fetch(`/fulltime/${timesheetId}/update-day`, {
+          const promise = fetch(`/parttime/${timesheetId}/update-day`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
