@@ -94,7 +94,8 @@
               <option value="BSIT" {{ old('department')=='BSIT'?'selected':'' }}>BSIT</option>
               <option value="BSBA" {{ old('department')=='BSBA'?'selected':'' }}>BSBA</option>
               <option value="BSHM" {{ old('department')=='BSHM'?'selected':'' }}>BSHM</option>
-              <option value="EDUCATION" {{ old('department')=='EDUCATION'?'selected':'' }}>EDUCATION</option>
+              <option value="BSED" {{ old('department')=='BSED'?'selected':'' }}>BSED</option>
+              <option value="BEED" {{ old('department')=='BEED'?'selected':'' }}>BEED</option>
               @isset($departments)
                 @foreach($departments as $department)
                   <option value="{{ $department->code }}" {{ old('department')==$department->code?'selected':'' }}>{{ $department->name }}</option>
