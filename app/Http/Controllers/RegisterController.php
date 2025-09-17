@@ -25,7 +25,7 @@ class RegisterController extends Controller
 
         // Add course validation only if role is attendance_checker
         if ($request->role === 'attendance_checker') {
-            $validationRules['course'] = 'required|in:bsit,bsba,bshm,education';
+            $validationRules['course'] = 'required|in:bsit,bsba,bshm,bsed,beed';
         }
 
         $request->validate($validationRules, [
