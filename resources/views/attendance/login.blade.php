@@ -201,6 +201,7 @@
             <button type="submit">
                 <i class="fas fa-sign-in-alt"></i> Login as Checker
             </button>
+
             <p class="back-link">
                 <a href="{{ url('/') }}">
                     <i class="fas fa-arrow-left"></i> Back to Main Login
