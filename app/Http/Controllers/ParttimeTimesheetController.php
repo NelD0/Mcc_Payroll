@@ -117,6 +117,86 @@ class ParttimeTimesheetController extends Controller
         return redirect()->route('parttime.index')->with('success', 'Part-time timesheet deleted!');
     }
 
+    public function updateDay(Request $request, $id)
+    {
+        $timesheet = ParttimeTimesheet::findOrFail($id);
+        $day = $request->input('day'); // numeric day 1..15
+        $hours = $request->input('hours', 0);
+
+        // Get current days data
+        $days = $timesheet->days;
+        if (is_string($days)) {
+            $decoded = json_decode($days, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $days = $decoded;
+            } else {
+                $days = [];
+            }
+        } elseif (!is_array($days)) {
+            $days = [];
+        }
+
+        // Update the specific day with hours
+        $days[$day] = floatval($hours);
+
+        // Remove days with 0 hours
+        if ($hours == 0) {
+            unset($days[$day]);
+        }
+
+        // Update the timesheet
+        $timesheet->days = json_encode($days);
+
+        // Recalculate total hours
+        $totalHours = array_sum($days);
+        $timesheet->total_hour = $totalHours;
+
+        // Recalculate total honorarium
+        $timesheet->total_honorarium = ($totalHours * ($timesheet->rate_per_hour ?? 0)) - ($timesheet->deduction ?? 0);
+        if ($timesheet->total_honorarium < 0) {
+            $timesheet->total_honorarium = 0;
+        }
+
+        $timesheet->save();
+
+        return response()->json([
+            'success' => true,
+            'total_hour' => $totalHours,
+            'total_honorarium' => number_format($timesheet->total_honorarium, 2)
+        ]);
+    }
+
+    public function updateField(Request $request, $id)
+    {
+        $timesheet = ParttimeTimesheet::findOrFail($id);
+        $field = $request->input('field');
+        $value = $request->input('value');
+
+        // Validate allowed fields
+        $allowedFields = ['employee_name', 'designation', 'prov_abr', 'department', 'details', 'rate_per_hour', 'deduction'];
+        if (!in_array($field, $allowedFields)) {
+            return response()->json(['success' => false, 'message' => 'Invalid field'], 400);
+        }
+
+        // Update the field
+        $timesheet->$field = $value;
+
+        // Recalculate total honorarium if rate_per_hour or deduction changed
+        if (in_array($field, ['rate_per_hour', 'deduction'])) {
+            $timesheet->total_honorarium = (($timesheet->total_hour ?? 0) * ($timesheet->rate_per_hour ?? 0)) - ($timesheet->deduction ?? 0);
+            if ($timesheet->total_honorarium < 0) {
+                $timesheet->total_honorarium = 0;
+            }
+        }
+
+        $timesheet->save();
+
+        return response()->json([
+            'success' => true,
+            'total_honorarium' => number_format($timesheet->total_honorarium, 2)
+        ]);
+    }
+
     public function printAll()
     {
         $timesheets = ParttimeTimesheet::all();
