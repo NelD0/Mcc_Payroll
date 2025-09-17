@@ -227,7 +227,8 @@
                     <option value="bsit" {{ old('course') == 'bsit' ? 'selected' : '' }}>BSIT (Information Technology)</option>
                     <option value="bsba" {{ old('course') == 'bsba' ? 'selected' : '' }}>BSBA (Business Administration)</option>
                     <option value="bshm" {{ old('course') == 'bshm' ? 'selected' : '' }}>BSHM (Hospitality Management)</option>
-                    <option value="education" {{ old('course') == 'education' ? 'selected' : '' }}>Education</option>
+                    <option value="bsed" {{ old('course') == 'bsed' ? 'selected' : '' }}>BSED (Secondary Education)</option>
+                    <option value="beed" {{ old('course') == 'beed' ? 'selected' : '' }}>BEED (Elementary Education)</option>
                 </select>
                 @error('course') <div class="error-message">{{ $message }}</div> @enderror
             </div>
