@@ -32,9 +32,15 @@ class DepartmentSeeder extends Seeder
                 'is_active' => true,
             ],
             [
-                'name' => 'Education Department',
-                'code' => 'EDUCATION',
-                'description' => 'Education and Teaching Department',
+                'name' => 'Bachelor of Secondary Education',
+                'code' => 'BSED',
+                'description' => 'Secondary Education Department',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Bachelor of Elementary Education',
+                'code' => 'BEED',
+                'description' => 'Elementary Education Department',
                 'is_active' => true,
             ],
         ];
