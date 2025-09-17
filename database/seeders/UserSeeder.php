@@ -57,11 +57,11 @@ class UserSeeder extends Seeder
         ]);
 
         DB::table('users')->insert([
-            'name' => 'Education Attendance Checker',
-            'email' => 'education@mcc.edu.ph',
-            'password' => Hash::make('education123456'),
+            'name' => 'BSED Attendance Checker',
+            'email' => 'bsed@mcc.edu.ph',
+            'password' => Hash::make('bsed123456'),
             'role' => 'attendance_checker',
-            'course' => 'education',
+            'course' => 'bsed',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
