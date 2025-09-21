@@ -330,31 +330,76 @@
         </select>
       </div>
 
+      <!-- Days in Fulltime Section -->
       <div class="mb-3">
-        <label for="days" class="form-label">Working Days (Hours per Day)</label>
-        <div class="days-selector mb-2">
-          <div class="row">
-            @php($days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'])
-            @foreach($days as $index => $day)
-              @php($i = $index + 1) <!-- Keep numeric keys 1..6 for backend compatibility -->
-              <div class="col-md-4 col-sm-6 col-12 mb-3">
-                <label class="form-label" for="day{{ $i }}">{{ $day }} Hours</label>
-                <input
-                  type="number"
-                  class="form-control day-hours"
-                  id="day{{ $i }}"
-                  name="days[{{ $i }}]"
-                  min="0"
-                  max="24"
-                  step="0.25"
-                  value=""
-                  placeholder="0"
-                >
-              </div>
-            @endforeach
+        <label class="form-label">Days in Fulltime</label>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="period" id="period_1_15" value="1-15" checked>
+              <label class="form-check-label" for="period_1_15">
+                1-15
+              </label>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="period" id="period_16_30" value="16-30">
+              <label class="form-check-label" for="period_16_30">
+                16-30
+              </label>
+            </div>
           </div>
         </div>
-        <small class="form-text text-muted">Enter the number of hours worked for each day (Monday–Saturday). Leave blank for 0.</small>
+      </div>
+
+      <!-- Days of Week -->
+      <div class="mb-3">
+        <label class="form-label">Working Days (Mon-Sat)</label>
+        <div class="days-selector">
+          <div class="row">
+            <div class="col-12 mb-2">
+              <label for="mon_hours" class="form-label">Monday Hours</label>
+              <input type="number" step="0.01" class="form-control day-hours" id="mon_hours" name="mon_hours">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4 mb-2">
+              <label for="tue_hours" class="form-label">Tuesday</label>
+              <input type="number" step="0.01" class="form-control day-hours" id="tue_hours" name="tue_hours">
+            </div>
+            <div class="col-md-4 mb-2">
+              <label for="wed_hours" class="form-label">Wednesday</label>
+              <input type="number" step="0.01" class="form-control day-hours" id="wed_hours" name="wed_hours">
+            </div>
+            <div class="col-md-4 mb-2">
+              <label for="thu_hours" class="form-label">Thursday</label>
+              <input type="number" step="0.01" class="form-control day-hours" id="thu_hours" name="thu_hours">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-2">
+              <label for="fri_hours" class="form-label">Friday</label>
+              <input type="number" step="0.01" class="form-control day-hours" id="fri_hours" name="fri_hours">
+            </div>
+            <div class="col-md-6 mb-2">
+              <label for="sat_hours" class="form-label">Saturday</label>
+              <input type="number" step="0.01" class="form-control day-hours" id="sat_hours" name="sat_hours">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <label for="sun_hours" class="form-label">Sunday</label>
+              <input type="number" step="0.01" class="form-control day-hours" id="sun_hours" name="sun_hours" readonly>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Number Input -->
+      <div class="mb-3">
+        <label for="number_of_days" class="form-label">Number of Days</label>
+        <input type="number" class="form-control" id="number_of_days" name="number_of_days" min="1" max="7" value="6">
       </div>
 
       <div class="mb-3">
@@ -508,6 +553,41 @@
 
   // Initial calculation
   calculateTotal();
+
+  // Auto-select period based on current date
+  function setPeriodBasedOnDate() {
+    const today = new Date();
+    const day = today.getDate();
+    const period1_15 = document.getElementById('period_1_15');
+    const period16_30 = document.getElementById('period_16_30');
+
+    if (day <= 15) {
+      period1_15.checked = true;
+    } else {
+      period16_30.checked = true;
+    }
+  }
+
+  // Populate working days with Monday's value
+  function populateWorkingDays() {
+    const monHours = parseFloat(document.getElementById('mon_hours').value) || 0;
+    const numberOfDays = parseInt(document.getElementById('number_of_days').value) || 6;
+
+    const days = ['tue_hours', 'wed_hours', 'thu_hours', 'fri_hours', 'sat_hours'];
+    for (let i = 0; i < Math.min(numberOfDays - 1, days.length); i++) {
+      document.getElementById(days[i]).value = monHours;
+    }
+  }
+
+  // Event listeners
+  document.getElementById('mon_hours').addEventListener('input', populateWorkingDays);
+  document.getElementById('number_of_days').addEventListener('input', populateWorkingDays);
+
+  // Set period on load
+  setPeriodBasedOnDate();
+
+  // Initial populate
+  populateWorkingDays();
   </script>
 
   <style>
