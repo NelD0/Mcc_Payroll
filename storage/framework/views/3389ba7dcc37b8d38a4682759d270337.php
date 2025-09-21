@@ -139,7 +139,7 @@
             <a href="<?php echo e(url('/admin/login')); ?>" class="role-btn admin-btn">
                 Administrator Login
             </a>
-            <a href="<?php echo e(url('/attendance/login')); ?>" class="role-btn attendance-btn">
+            <a href="<?php echo e(url('/attendance/attendlog')); ?>" class="role-btn attendance-btn">
                 Attendance Checker Login
             </a>
         </div>
