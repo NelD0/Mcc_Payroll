@@ -13,7 +13,15 @@ class FulltimeTimesheet extends Model
         'designation',
         'prov_abr',
         'department',
-        'days',
+        'period',
+        'working_days',
+        'mon_hours',
+        'tue_hours',
+        'wed_hours',
+        'thu_hours',
+        'fri_hours',
+        'sat_hours',
+        'sun_hours',
         'details',
         'total_hour',
         'rate_per_hour',
@@ -21,9 +29,7 @@ class FulltimeTimesheet extends Model
         'total_honorarium'
     ];
 
-    protected $casts = [
-        'days' => 'array', // JSON stored as array
-    ];
+
 
     /**
      * Get the employee that owns the timesheet
