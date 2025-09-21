@@ -14,6 +14,16 @@ class AdminController extends Controller
 {
     public function login(Request $request)
     {
+        // Throttle: 3 attempts, then 60-second cooldown using session storage
+        $attempts = $request->session()->get('admin_login_attempts', 0);
+        $cooldownUntil = $request->session()->get('admin_login_cooldown_until');
+        $now = now();
+
+        if ($cooldownUntil && $now->lessThan(\Carbon\Carbon::parse($cooldownUntil))) {
+            $secondsLeft = $now->diffInSeconds(\Carbon\Carbon::parse($cooldownUntil));
+            return back()->with('error', 'Too many attempts. Please wait ' . $secondsLeft . ' seconds before trying again.');
+        }
+
         // Validate input
         $request->validate([
             'email' => 'required|email',
@@ -42,6 +52,11 @@ class AdminController extends Controller
                 ]);
                 DB::table('users')->where('id', $admin->id)->update(['password' => $newHash]);
             }
+
+            // Successful login: reset attempt counters
+            $request->session()->forget('admin_login_attempts');
+            $request->session()->forget('admin_login_cooldown_until');
+
             // Start admin session
             $request->session()->put('user_id', $admin->id);
             $request->session()->put('user_name', $admin->name);
@@ -51,8 +66,16 @@ class AdminController extends Controller
             return redirect('/dashboard')->with('success', 'Welcome back, Admin ' . $admin->name . '!');
         }
 
-        // If login fails
-        return back()->with('error', 'Invalid admin credentials or you are not authorized as admin.');
+        // Failed login: increment attempts and apply cooldown when reaching 3
+        $attempts++;
+        if ($attempts >= 3) {
+            $request->session()->put('admin_login_cooldown_until', $now->addSeconds(60)->toDateTimeString());
+            $request->session()->put('admin_login_attempts', 0);
+            return back()->with('error', 'Too many attempts. Please wait 60 seconds before trying again.');
+        }
+
+        $request->session()->put('admin_login_attempts', $attempts);
+        return back()->with('error', 'Invalid admin credentials or you are not authorized as admin. Attempts: ' . $attempts . '/3');
     }
 
     public function dashboard(Request $request)
