@@ -320,7 +320,8 @@
           <option value="BSIT">BSIT</option>
           <option value="BSBA">BSBA</option>
           <option value="BSHM">BSHM</option>
-          <option value="EDUCATION">EDUCATION</option>
+          <option value="BSED">BSED</option>
+          <option value="BEED">BEED</option>
           
           <!-- Dynamic options, if you still want to show other active departments -->
           <?php $__currentLoopData = $departments; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $department): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
