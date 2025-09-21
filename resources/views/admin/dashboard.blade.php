@@ -661,12 +661,52 @@
         </div>
 
         <div class="row g-3">
-<div class="col-12">
-    <div class="card-soft p-3">
-      
-    </div>
-</div>
+          <div class="col-12">
+             <div class="card-soft p-3">
+              {{-- Attendance Users Status (red = online, green = offline) --}}
+              @php
+                  // If controller doesn’t pass $attendanceUsers, fallback to role-based fetch
+                  $attendanceUsers = $attendanceUsers
+                      ?? \App\Models\User::query()->where('role', 'attendance_checker')->get();
+              @endphp
 
+              <h5 class="mb-3">Attendance Checkers</h5>
+
+              @if($attendanceUsers->isEmpty())
+                <div class="text-muted">No attendance users found.</div>
+              @else
+                <ul class="list-group list-group-flush">
+                  @foreach ($attendanceUsers as $user)
+                    @php
+                      $isOnline = cache()->has('user-is-online-'.$user->id);
+                    @endphp
+
+                    <li class="list-group-item d-flex align-items-center justify-content-between">
+                      <div class="me-3">
+                        <span class="me-2 d-inline-block rounded-circle"
+                              style="width:10px;height:10px;background: {{ $isOnline ? '#dc3545' : '#28a745' }};"></span>
+                        <span class="fw-semibold">{{ $user->name }}</span>
+                        <span class="text-muted small ms-2">({{ $user->course ?? '—' }})</span>
+                        @if($isOnline)
+                          @php $info = cache()->get('user-online-info-'.$user->id, []); @endphp
+                          <div class="small text-muted mt-1">
+                            <i class="bi bi-pc-display"></i>
+                            {{ $info['device'] ?? 'Unknown device' }}
+                            <span class="mx-1">•</span>
+                            <i class="bi bi-wifi"></i>
+                            {{ $info['ip'] ?? 'Unknown IP' }}
+                          </div>
+                        @endif
+                      </div>
+                      <span class="badge {{ $isOnline ? 'bg-danger' : 'bg-success' }}">
+                        {{ $isOnline ? 'Online' : 'Offline' }}
+                      </span>
+                    </li>
+                  @endforeach
+                </ul>
+              @endif
+            </div>
+          </div>
         </div>
       </div>
 
