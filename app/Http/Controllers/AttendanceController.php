@@ -5,11 +5,30 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
     public function login(Request $request)
     {
+        // Check lockout first
+        $now = Carbon::now();
+        $lockoutUntil = $request->session()->get('attendance_lockout_until');
+        if ($lockoutUntil && Carbon::parse($lockoutUntil)->gt($now)) {
+            $remaining = Carbon::parse($lockoutUntil)->diffInSeconds($now);
+            return back()
+                ->with('error', 'Too many attempts. Please wait before trying again.')
+                ->with('lockout_remaining', $remaining);
+        }
+
+        // If lockout expired, clear it
+        if ($lockoutUntil && Carbon::parse($lockoutUntil)->lte($now)) {
+            $request->session()->forget('attendance_lockout_until');
+            $request->session()->forget('attendance_attempts');
+        }
+
         // Validate input
         $request->validate([
             'email' => 'required|email',
@@ -24,6 +43,10 @@ class AttendanceController extends Controller
             ->first();
 
         if ($attendanceUser && password_verify($request->password, $attendanceUser->password)) {
+            // Success: reset attempts/lockout
+            $request->session()->forget('attendance_attempts');
+            $request->session()->forget('attendance_lockout_until');
+
             // Additional security: Check if password needs rehashing (for upgraded security)
             if (password_needs_rehash($attendanceUser->password, PASSWORD_ARGON2ID, [
                 'memory_cost' => 65536,
@@ -45,11 +68,151 @@ class AttendanceController extends Controller
             $request->session()->put('user_course', $attendanceUser->course);
             $request->session()->put('is_attendance', true);
 
+            // Mark online in cache with metadata (IP and device)
+            $ip = $request->ip();
+            $device = substr($request->header('User-Agent', 'unknown'), 0, 120);
+            Cache::put('user-is-online-' . $attendanceUser->id, true, now()->addMinutes(10));
+            Cache::put('user-online-info-' . $attendanceUser->id, [
+                'ip' => $ip,
+                'device' => $device,
+                'at' => now()->toIso8601String(),
+            ], now()->addMinutes(10));
+
             return redirect('/attendance/dashboard')->with('success', 'Welcome back, ' . $attendanceUser->name . '!');
         }
 
-        // If login fails
-        return back()->with('error', 'Invalid attendance credentials or you are not authorized for attendance.');
+        // Failed attempt: increment counter and maybe lock
+        $attempts = (int) $request->session()->get('attendance_attempts', 0) + 1;
+        $request->session()->put('attendance_attempts', $attempts);
+
+        if ($attempts >= 3) {
+            // Lock out for 60 seconds and reset attempts
+            $lockUntil = $now->copy()->addSeconds(60);
+            $request->session()->put('attendance_lockout_until', $lockUntil->toIso8601String());
+            $request->session()->forget('attendance_attempts');
+
+            return back()
+                ->with('error', 'Invalid credentials. Please wait 60 seconds before trying again.')
+                ->with('lockout_remaining', 60);
+        }
+
+        return back()
+            ->with('error', 'Invalid attendance credentials or you are not authorized for attendance.')
+            ->with('attempts_left', max(0, 3 - $attempts));
+    }
+
+    public function showForgotForm()
+    {
+        return view('attendance.forgot_password');
+    }
+
+    public function sendOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        // Always respond success to prevent user enumeration
+        $genericResponse = redirect()->route('attendance.reset.form', ['email' => $request->email])
+            ->with('success', 'If the email exists and is authorized, an OTP has been sent.');
+
+        // Verify the email belongs to an attendance checker
+        $user = DB::table('users')
+            ->where('email', $request->email)
+            ->where('role', 'attendance_checker')
+            ->first();
+
+        if (!$user) {
+            return $genericResponse;
+        }
+
+        // Generate 6-digit OTP and hash it
+        $otp = random_int(100000, 999999);
+        $otpHash = password_hash((string) $otp, PASSWORD_ARGON2ID, [
+            'memory_cost' => 65536,
+            'time_cost' => 4,
+            'threads' => 3,
+        ]);
+
+        // Store in DB with 10-minute expiration
+        DB::table('attendance_password_otps')->insert([
+            'email' => $request->email,
+            'otp_hash' => $otpHash,
+            'expires_at' => now()->addMinutes(10),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Send email via Mailable template
+        try {
+            \Mail::to($request->email)->send(new \App\Mail\AttendanceOtpMail((string) $otp));
+        } catch (\Throwable $e) {
+            // Log the error for debugging without exposing sensitive data
+            Log::error('Failed to send attendance OTP email', [
+                'to' => $request->email,
+                'error' => $e->getMessage(),
+                'trace' => config('app.debug') ? $e->getTraceAsString() : null,
+            ]);
+            // Still return generic response to avoid user enumeration
+        }
+
+        return $genericResponse;
+    }
+
+    public function showResetForm(Request $request)
+    {
+        $email = $request->query('email');
+        return view('attendance.reset_password', compact('email'));
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|digits:6',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        // Fetch latest valid OTP
+        $otpRecord = DB::table('attendance_password_otps')
+            ->where('email', $request->email)
+            ->whereNull('used_at')
+            ->where('expires_at', '>', now())
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$otpRecord || !password_verify($request->otp, $otpRecord->otp_hash)) {
+            return back()->withInput()->with('error', 'Invalid or expired OTP.');
+        }
+
+        // Verify user exists and is attendance checker
+        $user = DB::table('users')
+            ->where('email', $request->email)
+            ->where('role', 'attendance_checker')
+            ->first();
+
+        if (!$user) {
+            return back()->with('error', 'Unable to reset password for this account.');
+        }
+
+        // Update password
+        $newHash = password_hash($request->password, PASSWORD_ARGON2ID, [
+            'memory_cost' => 65536,
+            'time_cost' => 4,
+            'threads' => 3,
+        ]);
+        DB::table('users')->where('id', $user->id)->update([
+            'password' => $newHash,
+            'updated_at' => now(),
+        ]);
+
+        // Mark OTP as used
+        DB::table('attendance_password_otps')->where('id', $otpRecord->id)->update([
+            'used_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('attendance.attendlog.form')->with('success', 'Password reset successful. You can now log in.');
     }
 
     public function dashboard(Request $request)
@@ -286,6 +449,5 @@ class AttendanceController extends Controller
             ], 500);
         }
     }
-
 
 }
