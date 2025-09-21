@@ -139,7 +139,7 @@
             <a href="{{ url('/admin/login') }}" class="role-btn admin-btn">
                 Administrator Login
             </a>
-            <a href="{{ url('/attendance/login') }}" class="role-btn attendance-btn">
+            <a href="{{ url('/attendance/attendlog') }}" class="role-btn attendance-btn">
                 Attendance Checker Login
             </a>
         </div>
