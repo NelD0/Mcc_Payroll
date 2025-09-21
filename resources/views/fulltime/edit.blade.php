@@ -325,49 +325,117 @@
         <input type="text" class="form-control" id="prov_abr" name="prov_abr" value="{{ $timesheet->prov_abr }}">
       </div>
 
-      <div class="mb-3">
-        <label for="department" class="form-label">Department</label>
-        <select class="form-control" id="department" name="department">
-          <option value="">Select Department</option>
-          @foreach($departments as $department)
-            <option value="{{ $department->code }}" {{ $timesheet->department == $department->code ? 'selected' : '' }}>
-              {{ $department->name }} ({{ $department->code }})
-            </option>
-          @endforeach
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label for="days" class="form-label">Working Days</label>
-        <div class="days-selector mb-2">
-          <div class="row">
-            @php
-              $selectedDays = [];
-              if (is_string($timesheet->days)) {
-                $decoded = json_decode($timesheet->days, true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                  $selectedDays = array_map('intval', $decoded);
-                } else {
-                  $selectedDays = array_map('intval', array_filter(explode(',', $timesheet->days)));
-                }
-              } elseif (is_array($timesheet->days)) {
-                $selectedDays = array_map('intval', $timesheet->days);
-              }
-            @endphp
-            @for($i = 1; $i <= 15; $i++)
-              <div class="col-md-3 col-sm-4 col-6 mb-2">
-                <div class="form-check">
-                  <input class="form-check-input day-checkbox" type="checkbox" value="{{ $i }}" id="day{{ $i }}" {{ in_array($i, $selectedDays) ? 'checked' : '' }}>
-                  <label class="form-check-label" for="day{{ $i }}">
-                    Day {{ $i }}
-                  </label>
-                </div>
-              </div>
-            @endfor
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="department" class="form-label">Department</label>
+            <select class="form-control" id="department" name="department">
+              <option value="">Select Department</option>
+              @foreach($departments as $department)
+                <option value="{{ $department->code }}" {{ $timesheet->department == $department->code ? 'selected' : '' }}>
+                  {{ $department->name }} ({{ $department->code }})
+                </option>
+              @endforeach
+            </select>
           </div>
         </div>
-        <input type="hidden" class="form-control" id="days" name="days" value="{{ is_array($timesheet->days) ? implode(',', $timesheet->days) : $timesheet->days }}">
-        <small class="form-text text-muted">Select the working days for this timesheet</small>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="period" class="form-label">Days in Fulltime (Period)</label>
+            <select class="form-control" id="period" name="period" required>
+              <option value="1-15" {{ $timesheet->period == '1-15' ? 'selected' : '' }}>1-15</option>
+              <option value="16-30" {{ $timesheet->period == '16-30' ? 'selected' : '' }}>16-30</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- Working Days Section -->
+      <div class="mb-3">
+        <label class="form-label">Working Days (Mon-Sat)</label>
+        <div class="days-selector">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-check">
+                <input class="form-check-input working-day" type="checkbox" value="mon" id="mon" name="working_days[]" {{ in_array('mon', json_decode($timesheet->working_days ?? '[]', true) ?: []) ? 'checked' : '' }}>
+                <label class="form-check-label" for="mon">
+                  Monday
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input working-day" type="checkbox" value="tue" id="tue" name="working_days[]" {{ in_array('tue', json_decode($timesheet->working_days ?? '[]', true) ?: []) ? 'checked' : '' }}>
+                <label class="form-check-label" for="tue">
+                  Tuesday
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input working-day" type="checkbox" value="wed" id="wed" name="working_days[]" {{ in_array('wed', json_decode($timesheet->working_days ?? '[]', true) ?: []) ? 'checked' : '' }}>
+                <label class="form-check-label" for="wed">
+                  Wednesday
+                </label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check">
+                <input class="form-check-input working-day" type="checkbox" value="thu" id="thu" name="working_days[]" {{ in_array('thu', json_decode($timesheet->working_days ?? '[]', true) ?: []) ? 'checked' : '' }}>
+                <label class="form-check-label" for="thu">
+                  Thursday
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input working-day" type="checkbox" value="fri" id="fri" name="working_days[]" {{ in_array('fri', json_decode($timesheet->working_days ?? '[]', true) ?: []) ? 'checked' : '' }}>
+                <label class="form-check-label" for="fri">
+                  Friday
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input working-day" type="checkbox" value="sat" id="sat" name="working_days[]" {{ in_array('sat', json_decode($timesheet->working_days ?? '[]', true) ?: []) ? 'checked' : '' }}>
+                <label class="form-check-label" for="sat">
+                  Saturday
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hours per Day Inputs -->
+      <div class="mb-3">
+        <label class="form-label">Hours per Day</label>
+        <div class="row">
+          <div class="col-md-3">
+            <label for="mon_hours" class="form-label">Monday</label>
+            <input type="number" step="0.01" class="form-control day-hours" id="mon_hours" name="mon_hours" value="{{ $timesheet->mon_hours }}">
+          </div>
+          <div class="col-md-3">
+            <label for="tue_hours" class="form-label">Tuesday</label>
+            <input type="number" step="0.01" class="form-control day-hours" id="tue_hours" name="tue_hours" value="{{ $timesheet->tue_hours }}">
+          </div>
+          <div class="col-md-3">
+            <label for="wed_hours" class="form-label">Wednesday</label>
+            <input type="number" step="0.01" class="form-control day-hours" id="wed_hours" name="wed_hours" value="{{ $timesheet->wed_hours }}">
+          </div>
+          <div class="col-md-3">
+            <label for="thu_hours" class="form-label">Thursday</label>
+            <input type="number" step="0.01" class="form-control day-hours" id="thu_hours" name="thu_hours" value="{{ $timesheet->thu_hours }}">
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-md-3">
+            <label for="fri_hours" class="form-label">Friday</label>
+            <input type="number" step="0.01" class="form-control day-hours" id="fri_hours" name="fri_hours" value="{{ $timesheet->fri_hours }}">
+          </div>
+          <div class="col-md-3">
+            <label for="sat_hours" class="form-label">Saturday</label>
+            <input type="number" step="0.01" class="form-control day-hours" id="sat_hours" name="sat_hours" value="{{ $timesheet->sat_hours }}">
+          </div>
+          <div class="col-md-3">
+            <label for="sun_hours" class="form-label">Sunday</label>
+            <input type="number" step="0.01" class="form-control day-hours" id="sun_hours" name="sun_hours" value="{{ $timesheet->sun_hours }}">
+          </div>
+        </div>
       </div>
 
       <div class="mb-3">
@@ -505,19 +573,89 @@
       checkbox.addEventListener('change', updateDaysField);
     });
 
+    // Copy Monday hours to other working days
+    function copyMondayHours() {
+      const monHours = document.getElementById('mon_hours').value;
+      const workingDays = document.querySelectorAll('.working-day:checked');
+
+      workingDays.forEach(day => {
+        if (day.value !== 'mon') {
+          const dayInput = document.getElementById(day.value + '_hours');
+          if (dayInput) {
+            dayInput.value = monHours;
+          }
+        }
+      });
+
+      // Update total hours after copying
+      updateTotalHours();
+    }
+
+    // Handle working day checkboxes
+    document.querySelectorAll('.working-day').forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        const dayInput = document.getElementById(this.value + '_hours');
+        if (dayInput) {
+          if (this.checked) {
+            dayInput.disabled = false;
+            // Copy Monday's hours if Monday is checked
+            if (this.value !== 'mon' && document.getElementById('mon').checked) {
+              dayInput.value = document.getElementById('mon_hours').value;
+            }
+          } else {
+            dayInput.disabled = true;
+            dayInput.value = '0';
+          }
+        }
+        updateTotalHours();
+      });
+    });
+
+    // Copy hours when Monday changes
+    document.getElementById('mon_hours').addEventListener('input', function() {
+      if (document.getElementById('mon').checked) {
+        copyMondayHours();
+      }
+    });
+
+    // Function to update total hours from day inputs
+    function updateTotalHours() {
+      const inputs = document.querySelectorAll('.day-hours:not([disabled])');
+      let total = 0;
+      inputs.forEach(inp => {
+        const v = parseFloat(inp.value);
+        if (!isNaN(v) && v > 0) total += v;
+      });
+      const totalHourEl = document.getElementById('total_hour');
+      if (totalHourEl) totalHourEl.value = total.toFixed(2);
+      calculateTotal();
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Disable unchecked days
+      document.querySelectorAll('.working-day:not(:checked)').forEach(checkbox => {
+        const dayInput = document.getElementById(checkbox.value + '_hours');
+        if (dayInput) {
+          dayInput.disabled = true;
+        }
+      });
+      updateTotalHours();
+    });
+
     // Auto-calculate total honorarium
     function calculateTotal() {
       const totalHour = parseFloat(document.getElementById('total_hour').value) || 0;
       const ratePerHour = parseFloat(document.getElementById('rate_per_hour').value) || 0;
       const deduction = parseFloat(document.getElementById('deduction').value) || 0;
-      
+
       const totalHonorarium = (totalHour * ratePerHour) - deduction;
       const calculatedValue = totalHonorarium < 0 ? 0 : totalHonorarium;
-      
+
       // Update the hidden field and display
       document.getElementById('total_honorarium').value = calculatedValue.toFixed(2);
       document.getElementById('calculated-total').textContent = '₱' + calculatedValue.toFixed(2);
-      
+
       // Add visual feedback
       const display = document.querySelector('.total-display');
       if (calculatedValue > 0) {
