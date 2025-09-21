@@ -661,12 +661,55 @@
         </div>
 
         <div class="row g-3">
-<div class="col-12">
-    <div class="card-soft p-3">
-      
-    </div>
-</div>
+          <div class="col-12">
+             <div class="card-soft p-3">
+              
+              <?php
+                  // If controller doesn’t pass $attendanceUsers, fallback to role-based fetch
+                  $attendanceUsers = $attendanceUsers
+                      ?? \App\Models\User::query()->where('role', 'attendance_checker')->get();
+              ?>
 
+              <h5 class="mb-3">Attendance Checkers</h5>
+
+              <?php if($attendanceUsers->isEmpty()): ?>
+                <div class="text-muted">No attendance users found.</div>
+              <?php else: ?>
+                <ul class="list-group list-group-flush">
+                  <?php $__currentLoopData = $attendanceUsers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php
+                      $isOnline = cache()->has('user-is-online-'.$user->id);
+                    ?>
+
+                    <li class="list-group-item d-flex align-items-center justify-content-between">
+                      <div class="me-3">
+                        <span class="me-2 d-inline-block rounded-circle"
+                              style="width:10px;height:10px;background: <?php echo e($isOnline ? '#dc3545' : '#28a745'); ?>;"></span>
+                        <span class="fw-semibold"><?php echo e($user->name); ?></span>
+                        <span class="text-muted small ms-2">(<?php echo e($user->course ?? '—'); ?>)</span>
+                        <?php if($isOnline): ?>
+                          <?php $info = cache()->get('user-online-info-'.$user->id, []); ?>
+                          <div class="small text-muted mt-1">
+                            <i class="bi bi-pc-display"></i>
+                            <?php echo e($info['device'] ?? 'Unknown device'); ?>
+
+                            <span class="mx-1">•</span>
+                            <i class="bi bi-wifi"></i>
+                            <?php echo e($info['ip'] ?? 'Unknown IP'); ?>
+
+                          </div>
+                        <?php endif; ?>
+                      </div>
+                      <span class="badge <?php echo e($isOnline ? 'bg-danger' : 'bg-success'); ?>">
+                        <?php echo e($isOnline ? 'Online' : 'Offline'); ?>
+
+                      </span>
+                    </li>
+                  <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </ul>
+              <?php endif; ?>
+            </div>
+          </div>
         </div>
       </div>
 
