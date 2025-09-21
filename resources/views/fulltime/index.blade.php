@@ -541,6 +541,7 @@
             <th>DESIGNATION</th>
             <th>Prov. Abr.</th>
             <th>DEPARTMENT</th>
+            <th>PERIOD</th>
             <th>Details for<br>Inclusive Hours of Classes</th>
             <th>TOTAL<br>Hour</th>
             <th>Rate per<br>Hour</th>
@@ -555,14 +556,15 @@
             <td class="left">{{ $timesheet->employee_name }}</td>
             <td>{{ ucfirst($timesheet->designation) }}</td>
             <td>
-              <input type="text" 
-                     class="form-control field-input" 
-                     value="{{ $timesheet->prov_abr }}" 
-                     data-timesheet-id="{{ $timesheet->id }}" 
+              <input type="text"
+                     class="form-control field-input"
+                     value="{{ $timesheet->prov_abr }}"
+                     data-timesheet-id="{{ $timesheet->id }}"
                      data-field="prov_abr"
                      placeholder="Prov. Abr.">
             </td>
             <td>{{ $timesheet->department }}</td>
+            <td>{{ $timesheet->period }}</td>
 
             <td>
               <input type="text" 
@@ -771,31 +773,8 @@
     // Manual save functionality only
     document.addEventListener('DOMContentLoaded', function() {
 
-      document.querySelectorAll('.day-input').forEach(input => {
-  input.addEventListener('change', function () {
-    const value = this.value.trim();
-    const dayAttr = this.dataset.day;  // e.g. "mon-1"
-    if (!dayAttr) return;
-
-    const [weekday, num] = dayAttr.split('-');
-    const posNum = parseInt(num, 10);
-    let targetPos = null;
-
-    // For cutoff 1-15: 1-6 → 8-13
-    if (posNum >= 1 && posNum <= 6) targetPos = posNum + 7;
-
-    // For cutoff 16-30: 16-21 → 23-28
-    if (posNum >= 16 && posNum <= 21) targetPos = posNum + 7;
-
-    if (targetPos) {
-      const selector = `.day-input[data-day="${weekday}-${targetPos}"]`;
-      const target = document.querySelector(selector);
-      if (target && target.value !== value) {
-        target.value = value;
-      }
-    }
-  });
-});
+      // Days functionality removed: no automatic mirroring
+      // document.querySelectorAll('.day-input').forEach(...);
 
 
       // Save button functionality
@@ -857,22 +836,8 @@
           promises.push(promise);
         });
         
-        // Create promises for each day update
-        Object.keys(dayData).forEach(day => {
-          const promise = fetch(`/fulltime/${timesheetId}/update-day`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': csrfToken,
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-              day: day,
-              hours: dayData[day]
-            })
-          });
-          promises.push(promise);
-        });
+        // Days functionality removed: skip day updates
+        // Object.keys(dayData).forEach(day => { /* no-op */ });
         
         // Wait for all updates to complete
         Promise.all(promises)
