@@ -51,11 +51,18 @@ Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('adm
 Route::get('/salary-adjustment', [AdminController::class, 'salaryAdjustment'])->name('salary.adjustment');
 
 // Attendance login routes
-Route::get('/attendance/login', function () {
-    return view('attendance.login');
-})->name('attendance.login.form');
-Route::post('/attendance/login', [AttendanceController::class, 'login'])->name('attendance.login')->middleware(app()->environment('production') ? 'throttle:3,1' : []);
+Route::get('/attendance/attendlog', function () {
+    return view('attendance.attendlog');
+})->name('attendance.attendlog.form');
+Route::post('/attendance/attendlog', [AttendanceController::class, 'login'])->name('attendance.attendlog')->middleware(app()->environment('production') ? 'throttle:3,1' : []);
 Route::get('/attendance/dashboard', [AttendanceController::class, 'dashboard'])->name('attendance.dashboard');
+
+// Attendance forgot/reset password (OTP via email)
+Route::get('/attendance/forgot-password', [AttendanceController::class, 'showForgotForm'])->name('attendance.forgot.form');
+Route::post('/attendance/forgot-password', [AttendanceController::class, 'sendOtp'])->name('attendance.forgot.send')->middleware(app()->environment('production') ? 'throttle:5,1' : []);
+Route::get('/attendance/reset-password', [AttendanceController::class, 'showResetForm'])->name('attendance.reset.form');
+Route::post('/attendance/reset-password', [AttendanceController::class, 'resetPassword'])->name('attendance.reset.submit')->middleware(app()->environment('production') ? 'throttle:5,1' : []);
+
 Route::get('/api/course-counts', [AttendanceController::class, 'getCourseCounts']);
 Route::get('/api/attendance-data/{course}', [AttendanceController::class, 'getAttendanceData']);
 Route::post('/api/save-attendance', [AttendanceController::class, 'saveAttendance']);
@@ -114,7 +121,8 @@ Route::middleware(['auth'])->group(function () {
 
 Route::resource('fulltime', FulltimeTimesheetController::class);
 Route::get('/fulltime/print/all', [FulltimeTimesheetController::class, 'printAll'])->name('fulltime.print');
-Route::post('/fulltime/{id}/update-day', [FulltimeTimesheetController::class, 'updateDay'])->name('fulltime.update.day');
+// Route removed: days functionality no longer supported
+// Route::post('/fulltime/{id}/update-day', [FulltimeTimesheetController::class, 'updateDay'])->name('fulltime.update.day');
 Route::post('/fulltime/{id}/update-field', [FulltimeTimesheetController::class, 'updateField'])->name('fulltime.update.field');
 
 Route::resource('parttime', ParttimeTimesheetController::class);
