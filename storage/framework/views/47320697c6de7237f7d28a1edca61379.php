@@ -537,38 +537,17 @@
       <table>
         <thead>
           <tr>
-            <th rowspan="2">NAMES</th>
-            <th rowspan="2">DESIGNATION</th>
-            <th rowspan="2">Prov. Abr.</th>
-            <th rowspan="2">DEPARTMENT</th>
-            <th colspan="15">Days</th>
-            <th rowspan="2">Details for<br>Inclusive Hours of Classes</th>
-            <th rowspan="2">TOTAL<br>Hour</th>
-            <th rowspan="2">Rate per<br>Hour</th>
-            <th rowspan="2">Deduction<br>Previous Cut Off</th>
-            <th rowspan="2">TOTAL HONORARIUM</th>
-            <th rowspan="2" class="actions-column">Actions</th>
-          </tr>
-          <?php
-            // Auto-switch days: 1-15 for first half, 16-30 for second half
-            $now = \Carbon\Carbon::now();
-            $dayNumbers = ($now->day > 15) ? range(16, min(30, $now->daysInMonth)) : range(1, 15);
-          ?>
-          <tr>
-            <?php $__currentLoopData = $dayNumbers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-              <?php
-                $dateObj = $d <= $now->daysInMonth ? $now->copy()->day($d) : null;
-                $title = $dateObj ? $dateObj->format('F j, l') : 'Day ' . $d;
-                $weekday = $dateObj ? $dateObj->format('D') : '';
-                // Use single-letter or two-letter abbreviation, TH for Thu
-                $abbr = $dateObj ? ($dateObj->format('D') === 'Thu' ? 'TH' : strtoupper(substr($dateObj->format('D'),0,1))) : '';
-                $isToday = $dateObj && $dateObj->isToday();
-              ?>
-              <th class="day-header" title="<?php echo e($title); ?>">
-                <span class="day-number"><?php echo e($d); ?></span><br>
-                <span class="day-abbr"><?php echo e($abbr); ?></span>
-              </th>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            <th>NAMES</th>
+            <th>DESIGNATION</th>
+            <th>Prov. Abr.</th>
+            <th>DEPARTMENT</th>
+            <th>PERIOD</th>
+            <th>Details for<br>Inclusive Hours of Classes</th>
+            <th>TOTAL<br>Hour</th>
+            <th>Rate per<br>Hour</th>
+            <th>Deduction<br>Previous Cut Off</th>
+            <th>TOTAL HONORARIUM</th>
+            <th class="actions-column">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -577,47 +556,16 @@
             <td class="left"><?php echo e($timesheet->employee_name); ?></td>
             <td><?php echo e(ucfirst($timesheet->designation)); ?></td>
             <td>
-              <input type="text" 
-                     class="form-control field-input" 
-                     value="<?php echo e($timesheet->prov_abr); ?>" 
-                     data-timesheet-id="<?php echo e($timesheet->id); ?>" 
+              <input type="text"
+                     class="form-control field-input"
+                     value="<?php echo e($timesheet->prov_abr); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
                      data-field="prov_abr"
                      placeholder="Prov. Abr.">
             </td>
             <td><?php echo e($timesheet->department); ?></td>
-            <?php
-              $days = $timesheet->days ?? [];
-              
-              // Normalize stored days into associative array: dayNumber => hours
-              if (is_string($days)) {
-                $decoded = json_decode($days, true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                  $days = $decoded;
-                } else {
-                  $days = array_map('trim', explode(',', $days));
-                  $days = array_filter($days);
-                  $days = array_map('intval', $days);
-                  $newDays = [];
-                  foreach($days as $day) { $newDays[$day] = 8; }
-                  $days = $newDays;
-                }
-              } elseif (!is_array($days)) {
-                $days = [];
-              }
-            ?>
-            <?php $__currentLoopData = $dayNumbers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-              <td class="day-column">
-                <input type="number"
-                       class="form-control day-input"
-                       value="<?php echo e(isset($days[$i]) ? $days[$i] : ''); ?>"
-                       min="0"
-                       max="24"
-                       step="0.5"
-                       data-timesheet-id="<?php echo e($timesheet->id); ?>"
-                       data-day="<?php echo e($i); ?>"
-                       placeholder="0">
-              </td>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            <td><?php echo e($timesheet->period); ?></td>
+
             <td>
               <input type="text" 
                      class="form-control field-input" 
@@ -666,7 +614,7 @@
           </tr>
           <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
           <tr>
-            <td colspan="22" class="text-center py-5">
+            <td colspan="10" class="text-center py-5">
               <div class="empty-state">
                 <i class="bi bi-inbox" style="font-size: 3rem; color: #6c757d; margin-bottom: 1rem;"></i>
                 <h5 class="text-muted">No Timesheet Records Found</h5>
@@ -825,6 +773,8 @@
     // Manual save functionality only
     document.addEventListener('DOMContentLoaded', function() {
 
+      // Days functionality removed: no automatic mirroring
+      // document.querySelectorAll('.day-input').forEach(...);
 
 
       // Save button functionality
@@ -886,22 +836,8 @@
           promises.push(promise);
         });
         
-        // Create promises for each day update
-        Object.keys(dayData).forEach(day => {
-          const promise = fetch(`/fulltime/${timesheetId}/update-day`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': csrfToken,
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-              day: day,
-              hours: dayData[day]
-            })
-          });
-          promises.push(promise);
-        });
+        // Days functionality removed: skip day updates
+        // Object.keys(dayData).forEach(day => { /* no-op */ });
         
         // Wait for all updates to complete
         Promise.all(promises)
