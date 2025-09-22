@@ -353,47 +353,48 @@
         </div>
       </div>
 
-      <!-- Days of Week -->
+      <!-- Working Days (Mon-Sat) -->
       <div class="mb-3">
         <label class="form-label">Working Days (Mon-Sat)</label>
         <div class="days-selector">
           <div class="row">
             <div class="col-12 mb-2">
               <label for="mon_hours" class="form-label">Monday Hours</label>
-              <input type="number" step="0.01" class="form-control day-hours" id="mon_hours" name="mon_hours">
+              <input type="number" step="0.01" class="form-control day-hours" id="mon_hours" name="mon_hours" min="0">
             </div>
           </div>
           <div class="row">
             <div class="col-md-4 mb-2">
               <label for="tue_hours" class="form-label">Tuesday</label>
-              <input type="number" step="0.01" class="form-control day-hours" id="tue_hours" name="tue_hours">
+              <input type="number" step="0.01" class="form-control day-hours" id="tue_hours" name="tue_hours" min="0" readonly>
             </div>
             <div class="col-md-4 mb-2">
               <label for="wed_hours" class="form-label">Wednesday</label>
-              <input type="number" step="0.01" class="form-control day-hours" id="wed_hours" name="wed_hours">
+              <input type="number" step="0.01" class="form-control day-hours" id="wed_hours" name="wed_hours" min="0" readonly>
             </div>
             <div class="col-md-4 mb-2">
               <label for="thu_hours" class="form-label">Thursday</label>
-              <input type="number" step="0.01" class="form-control day-hours" id="thu_hours" name="thu_hours">
+              <input type="number" step="0.01" class="form-control day-hours" id="thu_hours" name="thu_hours" min="0" readonly>
             </div>
           </div>
           <div class="row">
             <div class="col-md-6 mb-2">
               <label for="fri_hours" class="form-label">Friday</label>
-              <input type="number" step="0.01" class="form-control day-hours" id="fri_hours" name="fri_hours">
+              <input type="number" step="0.01" class="form-control day-hours" id="fri_hours" name="fri_hours" min="0" readonly>
             </div>
             <div class="col-md-6 mb-2">
               <label for="sat_hours" class="form-label">Saturday</label>
-              <input type="number" step="0.01" class="form-control day-hours" id="sat_hours" name="sat_hours">
+              <input type="number" step="0.01" class="form-control day-hours" id="sat_hours" name="sat_hours" min="0" readonly>
             </div>
           </div>
           <div class="row">
             <div class="col-12">
               <label for="sun_hours" class="form-label">Sunday</label>
-              <input type="number" step="0.01" class="form-control day-hours" id="sun_hours" name="sun_hours" readonly>
+              <input type="number" step="0.01" class="form-control" id="sun_hours" name="sun_hours" min="0" readonly>
             </div>
           </div>
         </div>
+        <small class="form-text text-muted">Enter hours for Monday, and Tue-Sat will be automatically populated with the same value</small>
       </div>
 
       <!-- Number Input -->
@@ -502,27 +503,36 @@
       }, 5000);
     });
 
-    // Handle per-day hours inputs -> compute total hours and update display
-    function getTotalHoursFromDaysInputs() {
-      const inputs = document.querySelectorAll('.day-hours');
-      let total = 0;
-      inputs.forEach(inp => {
-        const v = parseFloat(inp.value);
-        if (!isNaN(v) && v > 0) total += v;
+    // Handle Monday hours input -> populate all working days (Tue-Sat)
+    function populateWorkingDaysFromMonday() {
+      const monHours = parseFloat(document.getElementById('mon_hours').value) || 0;
+      const workingDays = ['tue_hours', 'wed_hours', 'thu_hours', 'fri_hours', 'sat_hours'];
+
+      workingDays.forEach(day => {
+        document.getElementById(day).value = monHours;
       });
-      return total;
+
+      // Calculate total hours (sum of all day hours)
+      calculateTotalHours();
+      calculateTotal();
     }
 
-    // Recalculate total hours when day inputs change
-    document.querySelectorAll('.day-hours').forEach(input => {
-      input.addEventListener('input', () => {
-        // Update total_hour input with the sum of day hours
-        const total = getTotalHoursFromDaysInputs();
-        const totalHourEl = document.getElementById('total_hour');
-        if (totalHourEl) totalHourEl.value = total.toFixed(2);
-        calculateTotal();
+    // Calculate total hours from all day inputs
+    function calculateTotalHours() {
+      const dayInputs = ['mon_hours', 'tue_hours', 'wed_hours', 'thu_hours', 'fri_hours', 'sat_hours', 'sun_hours'];
+      let total = 0;
+
+      dayInputs.forEach(day => {
+        const value = parseFloat(document.getElementById(day).value) || 0;
+        total += value;
       });
-    });
+
+      const totalHourEl = document.getElementById('total_hour');
+      if (totalHourEl) totalHourEl.value = total.toFixed(2);
+    }
+
+    // Event listener for Monday hours input
+    document.getElementById('mon_hours').addEventListener('input', populateWorkingDaysFromMonday);
 
     // Auto-calculate total honorarium (manual hours)
   function calculateTotal() {
@@ -554,13 +564,29 @@
   // Initial calculation
   calculateTotal();
 
-  // Auto-select period based on current date
+  // Auto-select period based on current date and month
   function setPeriodBasedOnDate() {
     const today = new Date();
     const day = today.getDate();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+
+    // Get the last day of the current month
+    const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+
     const period1_15 = document.getElementById('period_1_15');
     const period16_30 = document.getElementById('period_16_30');
+    const period16_30_label = document.querySelector('label[for="period_16_30"]');
 
+    // Update the second period label and value based on month's last day
+    const secondPeriodStart = 16;
+    const secondPeriodEnd = lastDayOfMonth;
+    const secondPeriodText = `${secondPeriodStart}-${secondPeriodEnd}`;
+
+    period16_30.value = secondPeriodText;
+    period16_30_label.textContent = secondPeriodText;
+
+    // Auto-select based on current day
     if (day <= 15) {
       period1_15.checked = true;
     } else {
@@ -568,26 +594,11 @@
     }
   }
 
-  // Populate working days with Monday's value
-  function populateWorkingDays() {
-    const monHours = parseFloat(document.getElementById('mon_hours').value) || 0;
-    const numberOfDays = parseInt(document.getElementById('number_of_days').value) || 6;
-
-    const days = ['tue_hours', 'wed_hours', 'thu_hours', 'fri_hours', 'sat_hours'];
-    for (let i = 0; i < Math.min(numberOfDays - 1, days.length); i++) {
-      document.getElementById(days[i]).value = monHours;
-    }
-  }
-
-  // Event listeners
-  document.getElementById('mon_hours').addEventListener('input', populateWorkingDays);
-  document.getElementById('number_of_days').addEventListener('input', populateWorkingDays);
-
   // Set period on load
   setPeriodBasedOnDate();
 
   // Initial populate
-  populateWorkingDays();
+  populateWorkingDaysFromMonday();
   </script>
 
   <style>
