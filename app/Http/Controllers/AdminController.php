@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PayslipMail;
 use App\Models\FulltimeTimesheet;
 use App\Models\ParttimeTimesheet;
 use App\Models\StaffTimesheet;
@@ -172,7 +174,7 @@ class AdminController extends Controller
             ];
             
             foreach ($tables as $table) {
-                $names = DB::table($table)->distinct()->pluck('name');
+                $names = DB::table($table)->distinct()->pluck('employee_name');
                 $allNames = $allNames->merge($names);
             }
             
@@ -181,5 +183,132 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             return 0;
         }
+    }
+
+    /**
+     * Send payslips to all employees across all timesheet tables
+     */
+    public function sendPayslips(Request $request)
+    {
+        if (!session()->has('user_id') || !session()->get('is_admin')) {
+            return back()->with('error', 'Please login as admin first.');
+        }
+
+        // Collect recipients: email, name, and total_honorarium from each table
+        $recipients = collect();
+
+        $fulltimeTable = (new FulltimeTimesheet)->getTable();
+        $parttimeTable = (new ParttimeTimesheet)->getTable();
+        $staffTable = (new StaffTimesheet)->getTable();
+        $utilityTable = (new UtilityTimesheet)->getTable();
+
+        // Fulltime: has email and period columns
+        $fulltimeRows = DB::table($fulltimeTable)
+            ->select('employee_name as name', 'email', 'total_honorarium', 'period')
+            ->whereNotNull('email')
+            ->where('email', '!=', '')
+            ->orderByDesc('id')
+            ->get();
+        foreach ($fulltimeRows as $row) {
+            if (!$row->email) continue;
+            if (!$recipients->has($row->email)) {
+                $recipients->put($row->email, [
+                    'name' => $row->name ?: 'Employee',
+                    'email' => $row->email,
+                    'total' => (float) ($row->total_honorarium ?? 0),
+                    'period' => $row->period ?? null,
+                    'type' => 'Fulltime',
+                ]);
+            }
+        }
+
+        // Part-time: has email but no period column
+        $parttimeRows = DB::table($parttimeTable)
+            ->select('employee_name as name', 'email', 'total_honorarium')
+            ->whereNotNull('email')
+            ->where('email', '!=', '')
+            ->orderByDesc('id')
+            ->get();
+        foreach ($parttimeRows as $row) {
+            if (!$row->email) continue;
+            if (!$recipients->has($row->email)) {
+                $recipients->put($row->email, [
+                    'name' => $row->name ?: 'Employee',
+                    'email' => $row->email,
+                    'total' => (float) ($row->total_honorarium ?? 0),
+                    'period' => null,
+                    'type' => 'Part-time',
+                ]);
+            }
+        }
+
+        // Staff: has email but no period column
+        $staffRows = DB::table($staffTable)
+            ->select('employee_name as name', 'email', 'total_honorarium')
+            ->whereNotNull('email')
+            ->where('email', '!=', '')
+            ->orderByDesc('id')
+            ->get();
+        foreach ($staffRows as $row) {
+            if (!$row->email) continue;
+            if (!$recipients->has($row->email)) {
+                $recipients->put($row->email, [
+                    'name' => $row->name ?: 'Employee',
+                    'email' => $row->email,
+                    'total' => (float) ($row->total_honorarium ?? 0),
+                    'period' => null,
+                    'type' => 'Staff',
+                ]);
+            }
+        }
+
+        // Utility: no email column; use employees.email via employee_id
+        $utilityRows = DB::table($utilityTable)
+            ->leftJoin('employees as e', $utilityTable . '.employee_id', '=', 'e.id')
+            ->select($utilityTable . '.employee_name as name', 'e.email as email', $utilityTable . '.total_honorarium')
+            ->whereNotNull('e.email')
+            ->where('e.email', '!=', '')
+            ->orderByDesc($utilityTable . '.id')
+            ->get();
+        foreach ($utilityRows as $row) {
+            if (!$row->email) continue;
+            if (!$recipients->has($row->email)) {
+                $recipients->put($row->email, [
+                    'name' => $row->name ?: 'Employee',
+                    'email' => $row->email,
+                    'total' => (float) ($row->total_honorarium ?? 0),
+                    'period' => null,
+                    'type' => 'Utility',
+                ]);
+            }
+        }
+
+        if ($recipients->isEmpty()) {
+            return back()->with('error', 'No employees with emails found to send payslips.');
+        }
+
+        $sent = 0; $failed = 0; $errors = [];
+
+        foreach ($recipients as $payload) {
+            try {
+                Mail::to($payload['email'])->send(new PayslipMail(
+                    name: $payload['name'],
+                    totalHonorarium: $payload['total'],
+                    period: $payload['period'],
+                    employeeType: $payload['type']
+                ));
+                $sent++;
+            } catch (\Throwable $e) {
+                $failed++;
+                $errors[] = $payload['email'] . ': ' . $e->getMessage();
+            }
+        }
+
+        $msg = "Payslips sent: {$sent}. Failed: {$failed}.";
+        if ($failed > 0 && config('app.debug')) {
+            $msg .= ' Errors: ' . implode(' | ', $errors);
+        }
+
+        return back()->with('success', $msg);
     }
 }
