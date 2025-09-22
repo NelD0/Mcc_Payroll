@@ -46,6 +46,8 @@ Route::post('/admin/login', [AdminController::class, 'login'])->name('admin.logi
 
 // Admin dashboard route
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+// Send payslips to all employees
+Route::post('/admin/send-payslips', [AdminController::class, 'sendPayslips'])->name('admin.send.payslips');
 
 // Salary Adjustment route
 Route::get('/salary-adjustment', [AdminController::class, 'salaryAdjustment'])->name('salary.adjustment');
