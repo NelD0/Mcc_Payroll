@@ -541,7 +541,22 @@
             <th>DESIGNATION</th>
             <th>Prov. Abr.</th>
             <th>DEPARTMENT</th>
-            <th>PERIOD</th>
+            <th>Days in<br>Fulltime</th>
+            <th class="day-header"><span class="day-number">1</span><br><span class="day-abbr">F</span></th>
+            <th class="day-header"><span class="day-number">2</span><br><span class="day-abbr">S</span></th>
+            <th class="day-header"><span class="day-number">3</span><br><span class="day-abbr">S</span></th>
+            <th class="day-header"><span class="day-number">4</span><br><span class="day-abbr">M</span></th>
+            <th class="day-header"><span class="day-number">5</span><br><span class="day-abbr">T</span></th>
+            <th class="day-header"><span class="day-number">6</span><br><span class="day-abbr">W</span></th>
+            <th class="day-header"><span class="day-number">7</span><br><span class="day-abbr">TH</span></th>
+            <th class="day-header"><span class="day-number">8</span><br><span class="day-abbr">F</span></th>
+            <th class="day-header"><span class="day-number">9</span><br><span class="day-abbr">S</span></th>
+            <th class="day-header"><span class="day-number">10</span><br><span class="day-abbr">S</span></th>
+            <th class="day-header"><span class="day-number">11</span><br><span class="day-abbr">M</span></th>
+            <th class="day-header"><span class="day-number">12</span><br><span class="day-abbr">T</span></th>
+            <th class="day-header"><span class="day-number">13</span><br><span class="day-abbr">W</span></th>
+            <th class="day-header"><span class="day-number">14</span><br><span class="day-abbr">TH</span></th>
+            <th class="day-header"><span class="day-number">15</span><br><span class="day-abbr">F</span></th>
             <th>Details for<br>Inclusive Hours of Classes</th>
             <th>TOTAL<br>Hour</th>
             <th>Rate per<br>Hour</th>
@@ -566,11 +581,162 @@
             <td><?php echo e($timesheet->department); ?></td>
             <td><?php echo e($timesheet->period); ?></td>
 
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day1_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day1_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day2_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day2_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day3_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day3_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day4_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day4_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day5_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day5_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day6_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day6_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day7_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day7_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day8_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day8_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day9_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day9_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day10_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day10_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day11_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day11_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day12_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day12_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day13_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day13_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day14_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day14_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+            <td class="day-column">
+              <input type="number"
+                     class="form-control day-input"
+                     value="<?php echo e($timesheet->day15_hours); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
+                     data-field="day15_hours"
+                     placeholder="0"
+                     min="0"
+                     step="0.5">
+            </td>
+
             <td>
-              <input type="text" 
-                     class="form-control field-input" 
-                     value="<?php echo e($timesheet->details); ?>" 
-                     data-timesheet-id="<?php echo e($timesheet->id); ?>" 
+              <input type="text"
+                     class="form-control field-input"
+                     value="<?php echo e($timesheet->details); ?>"
+                     data-timesheet-id="<?php echo e($timesheet->id); ?>"
                      data-field="details"
                      placeholder="Details">
             </td>
@@ -614,7 +780,7 @@
           </tr>
           <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
           <tr>
-            <td colspan="10" class="text-center py-5">
+            <td colspan="26" class="text-center py-5">
               <div class="empty-state">
                 <i class="bi bi-inbox" style="font-size: 3rem; color: #6c757d; margin-bottom: 1rem;"></i>
                 <h5 class="text-muted">No Timesheet Records Found</h5>
@@ -798,7 +964,7 @@
               fieldData[field] = input.value;
             }
           });
-          
+
           // Collect all day data (per day)
           const dayData = {};
           dayInputs.forEach(input => {
@@ -807,7 +973,7 @@
               dayData[day] = input.value;
             }
           });
-          
+
           // Save all data
           saveAllData(timesheetId, fieldData, dayData, this);
         });
