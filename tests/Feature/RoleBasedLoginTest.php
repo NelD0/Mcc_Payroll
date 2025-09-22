@@ -37,7 +37,7 @@ test('admin can login with correct credentials', function () {
 });
 
 test('attendance checker can login with correct credentials', function () {
-    $response = $this->post('/attendance/login', [
+    $response = $this->post('/attendance/attendlog', [
         'email' => 'attendance@test.com',
         'password' => 'password123',
         'user_type' => 'attendance'
@@ -50,7 +50,7 @@ test('attendance checker can login with correct credentials', function () {
 });
 
 test('admin cannot login with wrong role', function () {
-    $response = $this->post('/attendance/login', [
+    $response = $this->post('/attendance/attendlog', [
         'email' => 'admin@test.com',
         'password' => 'password123',
         'user_type' => 'attendance'
