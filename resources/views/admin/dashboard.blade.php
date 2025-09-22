@@ -523,6 +523,10 @@
         <button class="sidebar-btn"><i class="bi bi-clipboard-data me-2"></i>History Records</button>
         <a href="{{ route('master.list') }}" class="sidebar-btn text-decoration-none"><i class="bi bi-list-ul me-2"></i>Master List</a>
         <a href="{{ route('salary.adjustment') }}" class="sidebar-btn text-decoration-none"><i class="bi bi-calculator me-2"></i>Salary Adjustment/Differential</a>
+        <form action="{{ route('admin.send.payslips') }}" method="POST" class="mt-2" onsubmit="return confirm('Send payslips to all employees via email?');">
+          @csrf
+          <button type="submit" class="sidebar-btn w-100"><i class="bi bi-send-check me-2"></i>Send Payslips (All)</button>
+        </form>
       </nav>
     </aside>
 
