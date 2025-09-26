@@ -330,77 +330,33 @@
         </select>
       </div>
 
-      <!-- Days in Fulltime Section -->
+
+
       <div class="mb-3">
-        <label class="form-label">Days in Fulltime</label>
-        <div class="row">
-          <div class="col-md-6">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="period" id="period_1_15" value="1-15" checked>
-              <label class="form-check-label" for="period_1_15">
-                1-15
-              </label>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="period" id="period_16_30" value="16-30">
-              <label class="form-check-label" for="period_16_30">
-                16-30
-              </label>
-            </div>
+        <label for="days" class="form-label">Working Days (Hours per Day)</label>
+        <div class="days-selector mb-2">
+          <div class="row">
+            @php($days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'])
+            @foreach($days as $index => $day)
+              @php($i = $index + 1)
+              <div class="col-md-4 col-sm-6 col-12 mb-3">
+                <label class="form-label" for="day{{ $i }}">{{ $day }} Hours</label>
+                <input
+                  type="number"
+                  class="form-control day-hours"
+                  id="day{{ $i }}"
+                  name="days[{{ $i }}]"
+                  min="0"
+                  max="24"
+                  step="0.25"
+                  value=""
+                  placeholder="0"
+                >
+              </div>
+            @endforeach
           </div>
         </div>
-      </div>
-
-      <!-- Working Days (Mon-Sat) -->
-      <div class="mb-3">
-        <label class="form-label">Working Days (Mon-Sat)</label>
-        <div class="days-selector">
-          <div class="row">
-            <div class="col-12 mb-2">
-              <label for="mon_hours" class="form-label">Monday Hours</label>
-              <input type="number" step="0.01" class="form-control day-hours" id="mon_hours" name="mon_hours" min="0">
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4 mb-2">
-              <label for="tue_hours" class="form-label">Tuesday</label>
-              <input type="number" step="0.01" class="form-control day-hours" id="tue_hours" name="tue_hours" min="0" readonly>
-            </div>
-            <div class="col-md-4 mb-2">
-              <label for="wed_hours" class="form-label">Wednesday</label>
-              <input type="number" step="0.01" class="form-control day-hours" id="wed_hours" name="wed_hours" min="0" readonly>
-            </div>
-            <div class="col-md-4 mb-2">
-              <label for="thu_hours" class="form-label">Thursday</label>
-              <input type="number" step="0.01" class="form-control day-hours" id="thu_hours" name="thu_hours" min="0" readonly>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-2">
-              <label for="fri_hours" class="form-label">Friday</label>
-              <input type="number" step="0.01" class="form-control day-hours" id="fri_hours" name="fri_hours" min="0" readonly>
-            </div>
-            <div class="col-md-6 mb-2">
-              <label for="sat_hours" class="form-label">Saturday</label>
-              <input type="number" step="0.01" class="form-control day-hours" id="sat_hours" name="sat_hours" min="0" readonly>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-12">
-              <label for="sun_hours" class="form-label">Sunday</label>
-              <input type="number" step="0.01" class="form-control" id="sun_hours" name="sun_hours" min="0" readonly>
-            </div>
-          </div>
-        </div>
-        <small class="form-text text-muted">Enter hours for Monday, and Tue-Sat will be automatically populated with the same value</small>
-      </div>
-
-      <!-- Number Input -->
-      <div class="mb-3">
-        <label for="number_of_days" class="form-label">Number of Days</label>
-        <input type="number" class="form-control" id="number_of_days" name="number_of_days" min="1" max="7" value="6">
+        <small class="form-text text-muted">Enter the number of hours worked for each day (Monday–Saturday). Leave blank for 0.</small>
       </div>
 
       <div class="mb-3">
@@ -480,7 +436,7 @@
       
       // Show loading alert
       Swal.fire({
-        title: 'Creating Timesheet...',
+        title: 'Creating Fulltime Timesheet...',
         text: 'Please wait while we add the new timesheet.',
         icon: 'info',
         allowOutsideClick: false,
@@ -503,102 +459,60 @@
       }, 5000);
     });
 
-    // Handle Monday hours input -> populate all working days (Tue-Sat)
-    function populateWorkingDaysFromMonday() {
-      const monHours = parseFloat(document.getElementById('mon_hours').value) || 0;
-      const workingDays = ['tue_hours', 'wed_hours', 'thu_hours', 'fri_hours', 'sat_hours'];
-
-      workingDays.forEach(day => {
-        document.getElementById(day).value = monHours;
-      });
-
-      // Calculate total hours (sum of all day hours)
-      calculateTotalHours();
-      calculateTotal();
-    }
-
-    // Calculate total hours from all day inputs
-    function calculateTotalHours() {
-      const dayInputs = ['mon_hours', 'tue_hours', 'wed_hours', 'thu_hours', 'fri_hours', 'sat_hours', 'sun_hours'];
+    // Handle per-day hours inputs -> compute total hours and update display
+    function getTotalHoursFromDaysInputs() {
+      const inputs = document.querySelectorAll('.day-hours');
       let total = 0;
-
-      dayInputs.forEach(day => {
-        const value = parseFloat(document.getElementById(day).value) || 0;
-        total += value;
+      inputs.forEach(inp => {
+        const v = parseFloat(inp.value);
+        if (!isNaN(v) && v > 0) total += v;
       });
-
-      const totalHourEl = document.getElementById('total_hour');
-      if (totalHourEl) totalHourEl.value = total.toFixed(2);
+      return total;
     }
 
-    // Event listener for Monday hours input
-    document.getElementById('mon_hours').addEventListener('input', populateWorkingDaysFromMonday);
+    // Recalculate total hours when day inputs change
+    document.querySelectorAll('.day-hours').forEach(input => {
+      input.addEventListener('input', () => {
+        // Update total_hour input with the sum of day hours
+        const total = getTotalHoursFromDaysInputs();
+        const totalHourEl = document.getElementById('total_hour');
+        if (totalHourEl) totalHourEl.value = total.toFixed(2);
+        calculateTotal();
+      });
+    });
 
-    // Auto-calculate total honorarium (manual hours)
-  function calculateTotal() {
-    const totalHour = parseFloat(document.getElementById('total_hour').value) || 0;
-    const ratePerHour = parseFloat(document.getElementById('rate_per_hour').value) || 0;
-    const deduction = parseFloat(document.getElementById('deduction').value) || 0;
-    
-    const totalHonorarium = (totalHour * ratePerHour) - deduction;
-    const calculatedValue = totalHonorarium < 0 ? 0 : totalHonorarium;
-    
-    document.getElementById('calculated-total').textContent =
-      '₱' + calculatedValue.toFixed(2);
-
-    const display = document.querySelector('.total-display');
-    if (calculatedValue > 0) {
-      display.style.borderColor = '#198754';
-      display.querySelector('.amount').style.color = '#198754';
-    } else {
-      display.style.borderColor = '#dc3545';
-      display.querySelector('.amount').style.color = '#dc3545';
+    // Auto-calculate total honorarium
+    function calculateTotal() {
+      const totalHour = parseFloat(document.getElementById('total_hour').value) || 0;
+      const ratePerHour = parseFloat(document.getElementById('rate_per_hour').value) || 0;
+      const deduction = parseFloat(document.getElementById('deduction').value) || 0;
+      
+      const totalHonorarium = (totalHour * ratePerHour) - deduction;
+      const calculatedValue = totalHonorarium < 0 ? 0 : totalHonorarium;
+      
+      // Update the display
+      document.getElementById('calculated-total').textContent = '₱' + calculatedValue.toFixed(2);
+      
+      // Add visual feedback
+      const display = document.querySelector('.total-display');
+      if (calculatedValue > 0) {
+        display.style.borderColor = '#198754';
+        display.querySelector('.amount').style.color = '#198754';
+      } else {
+        display.style.borderColor = '#dc3545';
+        display.querySelector('.amount').style.color = '#dc3545';
+      }
     }
-  }
 
-  // Event listeners only for honorarium fields
-  document.getElementById('total_hour').addEventListener('input', calculateTotal);
-  document.getElementById('rate_per_hour').addEventListener('input', calculateTotal);
-  document.getElementById('deduction').addEventListener('input', calculateTotal);
+    // Add event listeners for auto-calculation
+    document.getElementById('total_hour').addEventListener('input', calculateTotal);
+    document.getElementById('rate_per_hour').addEventListener('input', calculateTotal);
+    document.getElementById('deduction').addEventListener('input', calculateTotal);
 
-  // Initial calculation
-  calculateTotal();
+    // Initial calculation
+    calculateTotal();
 
-  // Auto-select period based on current date and month
-  function setPeriodBasedOnDate() {
-    const today = new Date();
-    const day = today.getDate();
-    const year = today.getFullYear();
-    const month = today.getMonth();
 
-    // Get the last day of the current month
-    const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-
-    const period1_15 = document.getElementById('period_1_15');
-    const period16_30 = document.getElementById('period_16_30');
-    const period16_30_label = document.querySelector('label[for="period_16_30"]');
-
-    // Update the second period label and value based on month's last day
-    const secondPeriodStart = 16;
-    const secondPeriodEnd = lastDayOfMonth;
-    const secondPeriodText = `${secondPeriodStart}-${secondPeriodEnd}`;
-
-    period16_30.value = secondPeriodText;
-    period16_30_label.textContent = secondPeriodText;
-
-    // Auto-select based on current day
-    if (day <= 15) {
-      period1_15.checked = true;
-    } else {
-      period16_30.checked = true;
-    }
-  }
-
-  // Set period on load
-  setPeriodBasedOnDate();
-
-  // Initial populate
-  populateWorkingDaysFromMonday();
   </script>
 
   <style>
