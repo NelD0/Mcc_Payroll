@@ -13,7 +13,7 @@
       font-family: "Segoe UI", Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      background: linear-gradient(135deg, #e6f2ff 0%, #cde9ff 100%);
       min-height: 100vh;
       display: flex;
       align-items: flex-start;
@@ -64,7 +64,7 @@
       font-weight: 700;
       margin-bottom: 25px;
       text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      background: linear-gradient(135deg, #f093fb, #f5576c);
+      background: linear-gradient(135deg, #667eea, #764ba2);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -114,11 +114,11 @@
     }
 
     .btn-back {
-      background: linear-gradient(135deg, #f093fb, #f5576c);
+      background: linear-gradient(135deg, #667eea, #764ba2);
     }
     .btn-back:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
     }
 
     .add-btn {
@@ -130,7 +130,7 @@
     }
 
     .print-btn {
-      background: linear-gradient(135deg, #f093fb, #f5576c);
+      background: linear-gradient(135deg, #667eea, #764ba2);
       border: 2px solid rgba(255,255,255,0.3);
     }
     .print-btn:hover {
@@ -179,7 +179,7 @@
     }
 
     table thead {
-      background: linear-gradient(135deg, #f093fb, #f5576c);
+      background: linear-gradient(135deg, #667eea, #764ba2);
       color: white;
     }
 
@@ -206,7 +206,7 @@
     }
 
     tr:hover td {
-      background-color: rgba(240, 147, 251, 0.1) !important;
+      background-color: rgba(102, 126, 234, 0.1) !important;
       transition: background-color 0.3s ease;
     }
 
@@ -344,7 +344,7 @@
             <th rowspan="2">NAMES</th>
             <th rowspan="2">DESIGNATION</th>
             <th rowspan="2">Prov. Abr.</th>
-            <th colspan="15">Days</th>
+            <th colspan="15">Days (16–30)</th>
             <th rowspan="2">TOTAL<br>Days</th>
             <th rowspan="2">Rate per<br>Day</th>
             <th rowspan="2">Deduction<br>Previous Cut Off</th>
@@ -352,21 +352,9 @@
             <th rowspan="2" class="actions-column">Actions</th>
           </tr>
           <tr>
-            <td>1<br>F</td>
-            <td>2<br>S</td>
-            <td>3<br>S</td>
-            <td>4<br>M</td>
-            <td>5<br>T</td>
-            <td>6<br>W</td>
-            <td>7<br>TH</td>
-            <td>8<br>F</td>
-            <td>9<br>S</td>
-            <td>10<br>S</td>
-            <td>11<br>M</td>
-            <td>12<br>T</td>
-            <td>13<br>W</td>
-            <td>14<br>TH</td>
-            <td>15<br>F</td>
+            @for($d = 16; $d <= 30; $d++)
+              <th class="day-header"><span class="day-number">{{ $d }}</span><br><small class="weekday" data-day="{{ $d }}">—</small></th>
+            @endfor
           </tr>
         </thead>
         <tbody>
@@ -394,7 +382,7 @@
                 $days = [];
               }
             @endphp
-            @for($i = 1; $i <= 15; $i++)
+            @for($i = 16; $i <= 30; $i++)
               <td class="day-column">
                 <input type="number"
                        class="form-control day-input"
@@ -436,6 +424,20 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <script>
+    // Weekday helper
+    function getWeekdayLabel(day) {
+      const today = new Date();
+      const d = new Date(today.getFullYear(), today.getMonth(), day);
+      return ['S','M','T','W','T','F','S'][d.getDay()];
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.weekday').forEach(el => {
+        const day = parseInt(el.getAttribute('data-day'), 10);
+        if (!isNaN(day)) el.textContent = getWeekdayLabel(day);
+      });
+    });
+
     // Open dedicated print page
     function openPrintPage() {
       Swal.fire({
