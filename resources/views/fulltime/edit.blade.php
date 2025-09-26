@@ -13,7 +13,7 @@
       font-family: "Segoe UI", Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background: linear-gradient(135deg, #dc3545 0%, #c82333 50%, #dc3545 100%); /* Enhanced red gradient background */
+      background: linear-gradient(135deg, #e0f2ff 0%, #cfeaff 50%, #e0f2ff 100%); /* Light blue gradient background */
       min-height: 100vh;
       display: flex;
       align-items: flex-start;
@@ -331,6 +331,17 @@
             <label for="department" class="form-label">Department</label>
             <select class="form-control" id="department" name="department">
               <option value="">Select Department</option>
+              @php
+                $presetCodes = ['BSIT','BSBA','BSHM','BSED'];
+                $existing = array_map('strtoupper', $departments->pluck('code')->all());
+              @endphp
+              @foreach($presetCodes as $code)
+                @if(!in_array($code, $existing))
+                  <option value="{{ $code }}" {{ $timesheet->department == $code ? 'selected' : '' }}>
+                    {{ $code }} ({{ $code }})
+                  </option>
+                @endif
+              @endforeach
               @foreach($departments as $department)
                 <option value="{{ $department->code }}" {{ $timesheet->department == $department->code ? 'selected' : '' }}>
                   {{ $department->name }} ({{ $department->code }})
@@ -339,67 +350,12 @@
             </select>
           </div>
         </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label for="period" class="form-label">Days in Fulltime (Period)</label>
-            <select class="form-control" id="period" name="period" required>
-              <option value="1-15" {{ $timesheet->period == '1-15' ? 'selected' : '' }}>1-15</option>
-              <option value="16-30" {{ $timesheet->period == '16-30' ? 'selected' : '' }}>16-30</option>
-            </select>
-          </div>
-        </div>
+
       </div>
 
 
 
-      <!-- Working Days Section -->
-      <div class="mb-3">
-        <label class="form-label">Working Days (Mon-Sat)</label>
-        <div class="days-selector">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-check">
-                <input class="form-check-input working-day" type="checkbox" value="mon" id="mon" name="working_days[]" {{ in_array('mon', json_decode($timesheet->working_days ?? '[]', true) ?: []) ? 'checked' : '' }}>
-                <label class="form-check-label" for="mon">
-                  Monday
-                </label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input working-day" type="checkbox" value="tue" id="tue" name="working_days[]" {{ in_array('tue', json_decode($timesheet->working_days ?? '[]', true) ?: []) ? 'checked' : '' }}>
-                <label class="form-check-label" for="tue">
-                  Tuesday
-                </label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input working-day" type="checkbox" value="wed" id="wed" name="working_days[]" {{ in_array('wed', json_decode($timesheet->working_days ?? '[]', true) ?: []) ? 'checked' : '' }}>
-                <label class="form-check-label" for="wed">
-                  Wednesday
-                </label>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-check">
-                <input class="form-check-input working-day" type="checkbox" value="thu" id="thu" name="working_days[]" {{ in_array('thu', json_decode($timesheet->working_days ?? '[]', true) ?: []) ? 'checked' : '' }}>
-                <label class="form-check-label" for="thu">
-                  Thursday
-                </label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input working-day" type="checkbox" value="fri" id="fri" name="working_days[]" {{ in_array('fri', json_decode($timesheet->working_days ?? '[]', true) ?: []) ? 'checked' : '' }}>
-                <label class="form-check-label" for="fri">
-                  Friday
-                </label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input working-day" type="checkbox" value="sat" id="sat" name="working_days[]" {{ in_array('sat', json_decode($timesheet->working_days ?? '[]', true) ?: []) ? 'checked' : '' }}>
-                <label class="form-check-label" for="sat">
-                  Saturday
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       <!-- Hours per Day Inputs -->
       <div class="mb-3">
