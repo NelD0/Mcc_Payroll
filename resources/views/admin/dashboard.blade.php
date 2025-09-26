@@ -520,10 +520,10 @@
 
 
 
-        <button class="sidebar-btn"><i class="bi bi-clipboard-data me-2"></i>History Records</button>
+        <a href="{{ route('admin.history') }}" class="sidebar-btn text-decoration-none"><i class="bi bi-clipboard-data me-2"></i>History Records</a>
         <a href="{{ route('master.list') }}" class="sidebar-btn text-decoration-none"><i class="bi bi-list-ul me-2"></i>Master List</a>
         <a href="{{ route('salary.adjustment') }}" class="sidebar-btn text-decoration-none"><i class="bi bi-calculator me-2"></i>Salary Adjustment/Differential</a>
-        <form action="{{ route('admin.send.payslips') }}" method="POST" class="mt-2" onsubmit="return confirm('Send payslips to all employees via email?');">
+        <form action="{{ route('admin.send.payslips') }}" method="POST" class="mt-2" id="sendPayslipsForm">
           @csrf
           <button type="submit" class="sidebar-btn w-100"><i class="bi bi-send-check me-2"></i>Send Payslips (All)</button>
         </form>
@@ -1499,6 +1499,53 @@ function printInstructorRateData(rate, data) {
         sidebar.classList.toggle('show');
       });
     }
+
+    // SweetAlert confirmation for sending payslips
+    const sendForm = document.getElementById('sendPayslipsForm');
+    if (sendForm) {
+      sendForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        Swal.fire({
+          title: 'Send payslips to all employees?',
+          html: 'This will email payslips to all employees with an email on file.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, send now',
+          cancelButtonText: 'Cancel',
+          confirmButtonColor: '#3498db',
+          cancelButtonColor: '#6c757d'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            Swal.fire({
+              title: 'Sending…',
+              html: 'Please wait while we send payslips.',
+              allowOutsideClick: false,
+              didOpen: () => { Swal.showLoading(); }
+            });
+            sendForm.submit();
+          }
+        });
+      });
+    }
+
+    // Show result alerts after redirect
+    @if(session('success'))
+      Swal.fire({
+        icon: 'success',
+        title: 'Payslips Sent',
+        text: {!! json_encode(session('success')) !!},
+        confirmButtonColor: '#3498db'
+      });
+    @endif
+
+    @if(session('error'))
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: {!! json_encode(session('error')) !!},
+        confirmButtonColor: '#d33'
+      });
+    @endif
   });
   </script>
 </body>
