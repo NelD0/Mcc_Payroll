@@ -521,7 +521,7 @@
         </a>
         <h2 class="mb-0">Instructor Fulltime Timesheet</h2>
       </div>
-      
+
       <!-- Action buttons -->
       <div class="d-flex align-items-center">
         <button onclick="openPrintPage()" class="icon-btn print-btn me-2" title="Open Print Page">
@@ -533,6 +533,34 @@
       </div>
     </div>
 
+    <!-- Month/Year Selector -->
+    <div class="d-flex justify-content-center mb-4">
+      <form method="GET" action="{{ route('fulltime.index') }}" class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center">
+          <label for="month" class="me-2 fw-bold">Month:</label>
+          <select name="month" id="month" class="form-select" style="width: auto;">
+            @for ($m = 1; $m <= 12; $m++)
+              <option value="{{ $m }}" {{ $m == $month ? 'selected' : '' }}>
+                {{ \Carbon\Carbon::create()->month($m)->format('F') }}
+              </option>
+            @endfor
+          </select>
+        </div>
+        <div class="d-flex align-items-center">
+          <label for="year" class="me-2 fw-bold">Year:</label>
+          <select name="year" id="year" class="form-select" style="width: auto;">
+            @php
+              $currentYear = now()->year;
+            @endphp
+            @for ($y = $currentYear - 2; $y <= $currentYear + 2; $y++)
+              <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
+            @endfor
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+      </form>
+    </div>
+
     <div class="table-container mt-3">
       <table>
         <thead>
@@ -541,22 +569,10 @@
             <th>DESIGNATION</th>
             <th>Prov. Abr.</th>
             <th>DEPARTMENT</th>
-            <th>Days in<br>Fulltime</th>
-            <th class="day-header"><span class="day-number">1</span><br><span class="day-abbr">F</span></th>
-            <th class="day-header"><span class="day-number">2</span><br><span class="day-abbr">S</span></th>
-            <th class="day-header"><span class="day-number">3</span><br><span class="day-abbr">S</span></th>
-            <th class="day-header"><span class="day-number">4</span><br><span class="day-abbr">M</span></th>
-            <th class="day-header"><span class="day-number">5</span><br><span class="day-abbr">T</span></th>
-            <th class="day-header"><span class="day-number">6</span><br><span class="day-abbr">W</span></th>
-            <th class="day-header"><span class="day-number">7</span><br><span class="day-abbr">TH</span></th>
-            <th class="day-header"><span class="day-number">8</span><br><span class="day-abbr">F</span></th>
-            <th class="day-header"><span class="day-number">9</span><br><span class="day-abbr">S</span></th>
-            <th class="day-header"><span class="day-number">10</span><br><span class="day-abbr">S</span></th>
-            <th class="day-header"><span class="day-number">11</span><br><span class="day-abbr">M</span></th>
-            <th class="day-header"><span class="day-number">12</span><br><span class="day-abbr">T</span></th>
-            <th class="day-header"><span class="day-number">13</span><br><span class="day-abbr">W</span></th>
-            <th class="day-header"><span class="day-number">14</span><br><span class="day-abbr">TH</span></th>
-            <th class="day-header"><span class="day-number">15</span><br><span class="day-abbr">F</span></th>
+            {{-- Dynamic day headers based on selected month --}}
+            @foreach($days as $day)
+              <th class="day-header"><span class="day-number">{{ $day['number'] }}</span><br><span class="day-abbr">{{ $day['abbr'] }}</span></th>
+            @endforeach
             <th>Details for<br>Inclusive Hours of Classes</th>
             <th>TOTAL<br>Hour</th>
             <th>Rate per<br>Hour</th>
@@ -579,159 +595,20 @@
                      placeholder="Prov. Abr.">
             </td>
             <td>{{ $timesheet->department }}</td>
-            <td>{{ $timesheet->period }}</td>
 
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day1_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day1_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day2_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day2_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day3_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day3_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day4_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day4_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day5_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day5_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day6_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day6_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day7_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day7_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day8_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day8_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day9_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day9_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day10_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day10_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day11_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day11_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day12_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day12_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day13_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day13_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day14_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day14_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-            <td class="day-column">
-              <input type="number"
-                     class="form-control day-input"
-                     value="{{ $timesheet->day15_hours }}"
-                     data-timesheet-id="{{ $timesheet->id }}"
-                     data-field="day15_hours"
-                     placeholder="0"
-                     min="0"
-                     step="0.5">
-            </td>
-
+            @foreach($days as $day)
+              @php $field = 'day'.($day['number'] - 15).'_hours'; @endphp
+              <td class="day-column">
+                <input type="number"
+                       class="form-control day-input"
+                       value="{{ $timesheet->$field }}"
+                       data-timesheet-id="{{ $timesheet->id }}"
+                       data-field="{{ $field }}"
+                       placeholder="0"
+                       min="0"
+                       step="0.5">
+              </td>
+            @endforeach
             <td>
               <input type="text"
                      class="form-control field-input"
@@ -763,6 +640,11 @@
             </td>
             <td id="total-honorarium-{{ $timesheet->id }}">₱{{ number_format($timesheet->total_honorarium, 2) }}</td>
             <td class="actions-column">
+              <a href="{{ route('fulltime.edit', $timesheet->id) }}" 
+                 class="action-btn btn-edit me-2" 
+                 title="Edit">
+                <i class="bi bi-pencil-square"></i>
+              </a>
               <button type="button" 
                       class="action-btn btn-save me-2" 
                       data-timesheet-id="{{ $timesheet->id }}" 
@@ -780,7 +662,7 @@
           </tr>
           @empty
           <tr>
-            <td colspan="26" class="text-center py-5">
+            <td colspan="23" class="text-center py-5">
               <div class="empty-state">
                 <i class="bi bi-inbox" style="font-size: 3rem; color: #6c757d; margin-bottom: 1rem;"></i>
                 <h5 class="text-muted">No Timesheet Records Found</h5>
