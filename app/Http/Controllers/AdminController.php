@@ -11,6 +11,7 @@ use App\Models\FulltimeTimesheet;
 use App\Models\ParttimeTimesheet;
 use App\Models\StaffTimesheet;
 use App\Models\UtilityTimesheet;
+use App\Models\PayslipHistory;
 
 class AdminController extends Controller
 {
@@ -65,7 +66,7 @@ class AdminController extends Controller
             $request->session()->put('user_role', 'admin');
             $request->session()->put('is_admin', true);
 
-            return redirect('/dashboard')->with('success', 'Welcome back, Admin ' . $admin->name . '!');
+            return redirect('/dashboard');
         }
 
         // Failed login: increment attempts and apply cooldown when reaching 3
@@ -109,6 +110,149 @@ class AdminController extends Controller
 
         // Return the salary adjustment view
         return view('salary.adjustment');
+    }
+
+    /**
+     * Display history of sent payslips with optional filters
+     */
+    public function history(Request $request)
+    {
+        if (!session()->has('user_id') || !session()->get('is_admin')) {
+            return redirect('/')->with('error', 'Please login as admin first.');
+        }
+
+        try {
+            $query = \DB::table('payslip_histories')->whereNull('deleted_at')->orderByDesc('sent_at');
+
+            if ($request->filled('batch_id')) {
+                $query->where('batch_id', $request->batch_id);
+            }
+            if ($request->filled('email')) {
+                $query->where('email', 'like', '%' . $request->email . '%');
+            }
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $histories = $query->paginate(20)->appends($request->query());
+
+            // Distinct last 20 batch ids for quick filter
+            $batches = \DB::table('payslip_histories')
+                ->select('batch_id', \DB::raw('count(*) as total'), \DB::raw("sum(case when status='sent' then 1 else 0 end) as sent"), \DB::raw("sum(case when status='failed' then 1 else 0 end) as failed"))
+                ->groupBy('batch_id')
+                ->orderByDesc(\DB::raw('max(sent_at)'))
+                ->limit(20)
+                ->get();
+
+            return view('admin.history', [
+                'histories' => $histories,
+                'batches' => $batches,
+                'tableReady' => true,
+            ]);
+        } catch (\Throwable $e) {
+            // Likely table missing or not migrated yet
+            return view('admin.history', [
+                'histories' => collect(),
+                'batches' => collect(),
+                'tableReady' => false,
+                'errorMessage' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    // Soft delete a history record (AJAX or form)
+    public function historySoftDelete($id)
+    {
+        if (!session()->has('user_id') || !session()->get('is_admin')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $history = PayslipHistory::find($id);
+        if (!$history) {
+            return response()->json(['message' => 'Record not found'], 404);
+        }
+
+        $history->delete();
+        return response()->json(['message' => 'Record moved to trash.']);
+    }
+
+    // Permanently delete a history record
+    public function historyForceDelete($id)
+    {
+        if (!session()->has('user_id') || !session()->get('is_admin')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $history = PayslipHistory::withTrashed()->find($id);
+        if (!$history) {
+            return response()->json(['message' => 'Record not found'], 404);
+        }
+
+        $history->forceDelete();
+        return response()->json(['message' => 'Record permanently deleted.']);
+    }
+
+    // Display trash records (soft deleted)
+    public function trash(Request $request)
+    {
+        if (!session()->has('user_id') || !session()->get('is_admin')) {
+            return redirect('/')->with('error', 'Please login as admin first.');
+        }
+
+        try {
+            $query = \DB::table('payslip_histories')->whereNotNull('deleted_at')->orderByDesc('deleted_at');
+
+            if ($request->filled('batch_id')) {
+                $query->where('batch_id', $request->batch_id);
+            }
+            if ($request->filled('email')) {
+                $query->where('email', 'like', '%' . $request->email . '%');
+            }
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $histories = $query->paginate(20)->appends($request->query());
+
+            // Distinct last 20 batch ids for quick filter
+            $batches = \DB::table('payslip_histories')
+                ->select('batch_id', \DB::raw('count(*) as total'), \DB::raw("sum(case when status='sent' then 1 else 0 end) as sent"), \DB::raw("sum(case when status='failed' then 1 else 0 end) as failed"))
+                ->whereNotNull('deleted_at')
+                ->groupBy('batch_id')
+                ->orderByDesc(\DB::raw('max(deleted_at)'))
+                ->limit(20)
+                ->get();
+
+            return view('admin.trash', [
+                'histories' => $histories,
+                'batches' => $batches,
+                'tableReady' => true,
+            ]);
+        } catch (\Throwable $e) {
+            // Likely table missing or not migrated yet
+            return view('admin.trash', [
+                'histories' => collect(),
+                'batches' => collect(),
+                'tableReady' => false,
+                'errorMessage' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    // Restore a soft deleted history record
+    public function historyRestore($id)
+    {
+        if (!session()->has('user_id') || !session()->get('is_admin')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $history = PayslipHistory::withTrashed()->find($id);
+        if (!$history) {
+            return response()->json(['message' => 'Record not found'], 404);
+        }
+
+        $history->restore();
+        return response()->json(['message' => 'Record restored to history.']);
     }
 
     /**
@@ -289,6 +433,9 @@ class AdminController extends Controller
 
         $sent = 0; $failed = 0; $errors = [];
 
+        // Create a batch id to group this sending operation
+        $batchId = now()->format('YmdHis') . '-' . bin2hex(random_bytes(4));
+
         foreach ($recipients as $payload) {
             try {
                 Mail::to($payload['email'])->send(new PayslipMail(
@@ -298,13 +445,43 @@ class AdminController extends Controller
                     employeeType: $payload['type']
                 ));
                 $sent++;
+
+                // Log success into payslip_histories
+                \DB::table('payslip_histories')->insert([
+                    'batch_id' => $batchId,
+                    'name' => $payload['name'],
+                    'email' => $payload['email'],
+                    'employee_type' => $payload['type'],
+                    'total_honorarium' => $payload['total'],
+                    'period' => $payload['period'],
+                    'status' => 'sent',
+                    'error' => null,
+                    'sent_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
             } catch (\Throwable $e) {
                 $failed++;
                 $errors[] = $payload['email'] . ': ' . $e->getMessage();
+
+                // Log failure into payslip_histories
+                \DB::table('payslip_histories')->insert([
+                    'batch_id' => $batchId,
+                    'name' => $payload['name'],
+                    'email' => $payload['email'],
+                    'employee_type' => $payload['type'],
+                    'total_honorarium' => $payload['total'],
+                    'period' => $payload['period'],
+                    'status' => 'failed',
+                    'error' => $e->getMessage(),
+                    'sent_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
             }
         }
 
-        $msg = "Payslips sent: {$sent}. Failed: {$failed}.";
+        $msg = "Payslips sent: {$sent}. Failed: {$failed}. Batch: {$batchId}.";
         if ($failed > 0 && config('app.debug')) {
             $msg .= ' Errors: ' . implode(' | ', $errors);
         }
