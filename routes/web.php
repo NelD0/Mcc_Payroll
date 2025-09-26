@@ -48,6 +48,12 @@ Route::post('/admin/login', [AdminController::class, 'login'])->name('admin.logi
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 // Send payslips to all employees
 Route::post('/admin/send-payslips', [AdminController::class, 'sendPayslips'])->name('admin.send.payslips');
+// Payslip history
+Route::get('/admin/history', [AdminController::class, 'history'])->name('admin.history');
+Route::get('/admin/history/trash', [AdminController::class, 'trash'])->name('admin.history.trash');
+Route::delete('/admin/history/{id}', [AdminController::class, 'historySoftDelete'])->name('admin.history.delete');
+Route::patch('/admin/history/{id}/restore', [AdminController::class, 'historyRestore'])->name('admin.history.restore');
+Route::delete('/admin/history/{id}/force', [AdminController::class, 'historyForceDelete'])->name('admin.history.force');
 
 // Salary Adjustment route
 Route::get('/salary-adjustment', [AdminController::class, 'salaryAdjustment'])->name('salary.adjustment');
@@ -63,6 +69,11 @@ Route::get('/attendance/dashboard', [AttendanceController::class, 'dashboard'])-
 Route::get('/attendance/forgot-password', [AttendanceController::class, 'showForgotForm'])->name('attendance.forgot.form');
 Route::post('/attendance/forgot-password', [AttendanceController::class, 'sendOtp'])->name('attendance.forgot.send')->middleware(app()->environment('production') ? 'throttle:5,1' : []);
 Route::get('/attendance/reset-password', [AttendanceController::class, 'showResetForm'])->name('attendance.reset.form');
+// Step 1: Verify OTP only
+Route::post('/attendance/verify-otp', [AttendanceController::class, 'verifyOtp'])->name('attendance.verify')->middleware(app()->environment('production') ? 'throttle:5,1' : []);
+// Show change password form after OTP verification
+Route::get('/attendance/change-password', [AttendanceController::class, 'showChangePasswordForm'])->name('attendance.change.form');
+// Step 2: Change password after OTP verification
 Route::post('/attendance/reset-password', [AttendanceController::class, 'resetPassword'])->name('attendance.reset.submit')->middleware(app()->environment('production') ? 'throttle:5,1' : []);
 
 Route::get('/api/course-counts', [AttendanceController::class, 'getCourseCounts']);
