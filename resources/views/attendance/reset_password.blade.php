@@ -20,30 +20,22 @@
 </head>
 <body>
     <div class="container">
-        <h2><i class="fas fa-lock"></i> Reset Password</h2>
+        <h2><i class="fas fa-shield-alt"></i> Verify OTP</h2>
         @if(session('error'))
             <div style="color:#c0392b; margin-bottom:8px;">{{ session('error') }}</div>
         @endif
         @if(session('success'))
             <div style="color:#27ae60; margin-bottom:8px;">{{ session('success') }}</div>
         @endif
-        <form action="{{ route('attendance.reset.submit') }}" method="POST">
+        <form action="{{ route('attendance.verify') }}" method="POST">
             @csrf
             <input type="hidden" name="email" value="{{ old('email', $email) }}">
 
             <div class="input-group">
-                <label for="otp">6-digit OTP</label>
+                <label for="otp">Enter the 6-digit code sent to your email</label>
                 <input type="text" id="otp" name="otp" maxlength="6" pattern="\\d{6}" placeholder="123456" required>
             </div>
-            <div class="input-group">
-                <label for="password">New Password</label>
-                <input type="password" id="password" name="password" minlength="8" required>
-            </div>
-            <div class="input-group">
-                <label for="password_confirmation">Confirm New Password</label>
-                <input type="password" id="password_confirmation" name="password_confirmation" minlength="8" required>
-            </div>
-            <button type="submit">Reset Password</button>
+            <button type="submit">Verify Code</button>
         </form>
         <div class="link">
             <a href="{{ route('attendance.forgot.form') }}">Resend OTP</a> ·
