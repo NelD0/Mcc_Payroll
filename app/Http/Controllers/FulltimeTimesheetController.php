@@ -5,13 +5,40 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\FulltimeTimesheet;
 use App\Models\Department;
+use Illuminate\Validation\Rule;
 
 class FulltimeTimesheetController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $month = $request->get('month', now()->month);
+        $year = $request->get('year', now()->year);
+
         $timesheets = FulltimeTimesheet::all();
-        return view('fulltime.index', compact('timesheets'));
+
+        // Generate days for the selected month
+        $baseDate = \Carbon\Carbon::create($year, $month, 1);
+        $daysInMonth = $baseDate->daysInMonth;
+
+        // For payroll periods, show days 16-31 or 1-15 based on month
+        $startDay = 16;
+        $endDay = $daysInMonth;
+
+        $days = [];
+        $abbrMap = ['Mon'=>'M','Tue'=>'T','Wed'=>'W','Thu'=>'TH','Fri'=>'F','Sat'=>'S','Sun'=>'S'];
+
+        for ($d = $startDay; $d <= $endDay; $d++) {
+            if ($d <= $daysInMonth) {
+                $dayDate = $baseDate->copy()->day($d);
+                $days[] = [
+                    'number' => $d,
+                    'abbr' => $abbrMap[$dayDate->format('D')] ?? '',
+                    'date' => $dayDate->format('Y-m-d')
+                ];
+            }
+        }
+
+        return view('fulltime.index', compact('timesheets', 'days', 'month', 'year'));
     }
 
     public function create()
@@ -27,7 +54,7 @@ class FulltimeTimesheetController extends Controller
             'email' => 'nullable|email',
             'designation' => 'required|in:instructor,utility,staff',
             'prov_abr' => 'nullable',
-            'department' => 'required|string|in:BSIT,BSBA,BSHM,BSED,BEED',
+            'department' => ['required','string', Rule::in(Department::active()->pluck('code')->all())],
             'period' => 'required|in:1-15,16-30',
             'day1_hours' => 'nullable|numeric|min:0',
             'day2_hours' => 'nullable|numeric|min:0',
@@ -148,7 +175,7 @@ class FulltimeTimesheetController extends Controller
             'email' => 'nullable|email',
             'designation' => 'required|in:instructor,utility,staff',
             'prov_abr' => 'nullable',
-            'department' => 'required|string|in:BSIT,BSBA,BSHM,BSED,BEED',
+            'department' => ['required','string', Rule::in(Department::active()->pluck('code')->all())],
             'period' => 'required|in:1-15,16-30',
             'mon_hours' => 'nullable|numeric|min:0',
             'tue_hours' => 'nullable|numeric|min:0',
