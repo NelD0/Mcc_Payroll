@@ -14,7 +14,7 @@
       font-family: "Segoe UI", Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #e6f2ff 0%, #cde9ff 100%);
       min-height: 100vh;
       display: flex;
       align-items: flex-start;
@@ -326,16 +326,16 @@
       width: 60px;
       min-width: 60px;
       max-width: 60px;
-      font-size: 16px; /* bigger base size for header */
+      font-size: 12px; /* reduced size for day number */
       line-height: 1.2;
       font-weight: 700;
     }
     
     .day-header small {
-      font-size: 22px; /* bigger weekday letters */
-      color: #000000;
-      font-weight: 800;
-      letter-spacing: 0.5px;
+      font-size: 12px; /* reduced size for weekday letter */
+      color: #333333;
+      font-weight: 700;
+      letter-spacing: 0.3px;
     }
     
     /* Empty state styling */
@@ -514,7 +514,7 @@
             <th rowspan="2">DESIGNATION</th>
             <th rowspan="2">Prov. Abr.</th>
             <th rowspan="2">DEPARTMENT</th>
-            <th colspan="15">Days</th>
+            <th colspan="15">Days (16–30)</th>
             <th rowspan="2">Details for<br>Inclusive Hours of Classes</th>
             <th rowspan="2">TOTAL<br>Hour</th>
             <th rowspan="2">Rate per<br>Hour</th>
@@ -523,7 +523,7 @@
             <th rowspan="2" class="actions-column">Actions</th>
           </tr>
           <tr>
-            @for($d = 1; $d <= 15; $d++)
+            @for($d = 16; $d <= 30; $d++)
               <th class="day-header"><span class="day-number">{{ $d }}</span><br><small class="weekday" data-day="{{ $d }}">—</small></th>
             @endfor
           </tr>
@@ -567,7 +567,7 @@
                 $days = [];
               }
             @endphp
-            @for($i = 1; $i <= 15; $i++)
+            @for($i = 16; $i <= 30; $i++)
               <td class="day-column">
                 <input type="number" 
                        class="form-control day-input" 
@@ -657,6 +657,26 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <script>
+    // Compute weekday for any given day number in current month/year
+    function getWeekdayLabel(day) {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth(); // 0-based
+      const d = new Date(year, month, day);
+      const labels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+      return labels[d.getDay()];
+    }
+
+    // Initialize weekday labels for headers
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.weekday').forEach(el => {
+        const day = parseInt(el.getAttribute('data-day'), 10);
+        if (!isNaN(day)) {
+          el.textContent = getWeekdayLabel(day);
+        }
+      });
+    });
+
     // Open dedicated print page
     function openPrintPage() {
       Swal.fire({
@@ -787,13 +807,13 @@
         // Manual save functionality only
     document.addEventListener('DOMContentLoaded', function() {
 
-      // Auto-copy behavior like Fulltime: days 1-6 -> 8-13
+      // Auto-copy behavior for cut-off 16–30: mirror 16–21 -> 23–28 (skip 22 and 29/30 remain manual)
       document.querySelectorAll('.day-input').forEach(input => {
         input.addEventListener('change', function () {
           const val = this.value.trim();
           const dayNum = parseInt(this.dataset.day, 10);
-          if (!isNaN(dayNum) && dayNum >= 1 && dayNum <= 6) {
-            const targetNum = dayNum + 7; // mirror to next week, skip day 7
+          if (!isNaN(dayNum) && dayNum >= 16 && dayNum <= 21) {
+            const targetNum = dayNum + 7; // mirror to next week (23–28)
             const row = this.closest('tr');
             const target = row ? row.querySelector(`.day-input[data-day="${targetNum}"]`) : null;
             if (target && target.value !== val) {
