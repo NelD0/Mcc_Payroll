@@ -165,15 +165,13 @@ class AttendanceController extends Controller
         return view('attendance.reset_password', compact('email'));
     }
 
-    public function resetPassword(Request $request)
+    public function verifyOtp(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
             'otp' => 'required|digits:6',
-            'password' => 'required|string|min:8|confirmed',
         ]);
 
-        // Fetch latest valid OTP
         $otpRecord = DB::table('attendance_password_otps')
             ->where('email', $request->email)
             ->whereNull('used_at')
@@ -183,6 +181,44 @@ class AttendanceController extends Controller
 
         if (!$otpRecord || !password_verify($request->otp, $otpRecord->otp_hash)) {
             return back()->withInput()->with('error', 'Invalid or expired OTP.');
+        }
+
+        // Mark OTP as used and set session flag for verified email
+        DB::table('attendance_password_otps')->where('id', $otpRecord->id)->update([
+            'used_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $request->session()->put('attendance_reset_verified_email', $request->email);
+        $request->session()->put('attendance_reset_verified_until', now()->addMinutes(10)->toIso8601String());
+
+        return redirect()->route('attendance.change.form')->with('success', 'OTP verified. You can now change your password.');
+    }
+
+    public function showChangePasswordForm(Request $request)
+    {
+        $verifiedEmail = $request->session()->get('attendance_reset_verified_email');
+        $until = $request->session()->get('attendance_reset_verified_until');
+
+        if (!$verifiedEmail || ($until && \Carbon\Carbon::parse($until)->lte(now()))) {
+            return redirect()->route('attendance.forgot.form')->with('error', 'Session expired. Please request a new OTP.');
+        }
+
+        return view('attendance.change_password', ['email' => $verifiedEmail]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        // Ensure the email was verified via OTP recently
+        $verifiedEmail = $request->session()->get('attendance_reset_verified_email');
+        $until = $request->session()->get('attendance_reset_verified_until');
+        if ($verifiedEmail !== $request->email || ($until && \Carbon\Carbon::parse($until)->lte(now()))) {
+            return redirect()->route('attendance.forgot.form')->with('error', 'OTP verification required or expired. Please request a new code.');
         }
 
         // Verify user exists and is attendance checker
@@ -206,13 +242,11 @@ class AttendanceController extends Controller
             'updated_at' => now(),
         ]);
 
-        // Mark OTP as used
-        DB::table('attendance_password_otps')->where('id', $otpRecord->id)->update([
-            'used_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // Clear verification session
+        $request->session()->forget('attendance_reset_verified_email');
+        $request->session()->forget('attendance_reset_verified_until');
 
-        return redirect()->route('attendance.attendlog.form')->with('success', 'Password reset successful. You can now log in.');
+        return redirect()->route('attendance.attendlog.form')->with('success', 'Password updated. You can now log in.');
     }
 
     public function dashboard(Request $request)
